@@ -361,7 +361,7 @@ function renderUpdates(files) {
           <div class="version-meta">
             <span class="tag">v${escapeHtml(file.buildVersion)}</span>
           </div>
-          <div class="update-body">${linkify(escapeHtml(body))}</div>
+          <div class="update-body markdown-body">${renderMarkdown(body)}</div>
         </article>
       `;
     })
@@ -861,11 +861,129 @@ function formatBytes(bytes = 0) {
   return `${size.toFixed(unit ? 1 : 0)} ${units[unit]}`;
 }
 
-function linkify(text) {
-  return text.replace(
-    /(https?:\/\/[^\s<]+)/g,
-    (url) => `<a href="${escapeAttr(url)}" target="_blank" rel="noreferrer">${url}</a>`
+function renderMarkdown(source) {
+  const lines = String(source).replace(/\r\n?/g, "\n").split("\n");
+  const html = [];
+  let index = 0;
+
+  while (index < lines.length) {
+    const line = lines[index];
+
+    if (!line.trim()) {
+      index += 1;
+      continue;
+    }
+
+    const fence = line.match(/^```([A-Za-z0-9_-]+)?\s*$/);
+    if (fence) {
+      const code = [];
+      index += 1;
+      while (index < lines.length && !/^```\s*$/.test(lines[index])) {
+        code.push(lines[index]);
+        index += 1;
+      }
+      index += index < lines.length ? 1 : 0;
+      const language = fence[1] ? ` data-lang="${escapeAttr(fence[1])}"` : "";
+      html.push(`<pre${language}><code>${escapeHtml(code.join("\n"))}</code></pre>`);
+      continue;
+    }
+
+    const heading = line.match(/^(#{1,6})\s+(.+)$/);
+    if (heading) {
+      const level = heading[1].length;
+      html.push(`<h${level}>${renderInlineMarkdown(heading[2].trim())}</h${level}>`);
+      index += 1;
+      continue;
+    }
+
+    if (/^---+$/.test(line.trim())) {
+      html.push("<hr>");
+      index += 1;
+      continue;
+    }
+
+    if (/^>\s?/.test(line)) {
+      const quote = [];
+      while (index < lines.length && /^>\s?/.test(lines[index])) {
+        quote.push(lines[index].replace(/^>\s?/, ""));
+        index += 1;
+      }
+      html.push(`<blockquote>${renderMarkdown(quote.join("\n"))}</blockquote>`);
+      continue;
+    }
+
+    if (/^\s*[-*+]\s+/.test(line)) {
+      const items = [];
+      while (index < lines.length && /^\s*[-*+]\s+/.test(lines[index])) {
+        items.push(lines[index].replace(/^\s*[-*+]\s+/, ""));
+        index += 1;
+      }
+      html.push(`<ul>${items.map((item) => `<li>${renderInlineMarkdown(item)}</li>`).join("")}</ul>`);
+      continue;
+    }
+
+    if (/^\s*\d+[.)]\s+/.test(line)) {
+      const items = [];
+      while (index < lines.length && /^\s*\d+[.)]\s+/.test(lines[index])) {
+        items.push(lines[index].replace(/^\s*\d+[.)]\s+/, ""));
+        index += 1;
+      }
+      html.push(`<ol>${items.map((item) => `<li>${renderInlineMarkdown(item)}</li>`).join("")}</ol>`);
+      continue;
+    }
+
+    const paragraph = [line.trim()];
+    index += 1;
+    while (
+      index < lines.length &&
+      lines[index].trim() &&
+      !isMarkdownBlockStart(lines[index])
+    ) {
+      paragraph.push(lines[index].trim());
+      index += 1;
+    }
+    html.push(`<p>${renderInlineMarkdown(paragraph.join("\n"))}</p>`);
+  }
+
+  return html.join("");
+}
+
+function isMarkdownBlockStart(line) {
+  return (
+    /^```/.test(line) ||
+    /^(#{1,6})\s+/.test(line) ||
+    /^>\s?/.test(line) ||
+    /^\s*[-*+]\s+/.test(line) ||
+    /^\s*\d+[.)]\s+/.test(line) ||
+    /^---+$/.test(line.trim())
   );
+}
+
+function renderInlineMarkdown(source) {
+  return String(source)
+    .split(/(`[^`]+`)/g)
+    .map((part) => {
+      if (/^`[^`]+`$/.test(part)) {
+        return `<code>${escapeHtml(part.slice(1, -1))}</code>`;
+      }
+
+      const links = [];
+      return escapeHtml(part)
+        .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_match, label, href) => {
+          const marker = `@@LINK_${links.length}@@`;
+          links.push(`<a href="${escapeAttr(href)}" target="_blank" rel="noreferrer">${label}</a>`);
+          return marker;
+        })
+        .replace(/(https?:\/\/[^\s<]+)/g, (url) => `<a href="${escapeAttr(url)}" target="_blank" rel="noreferrer">${url}</a>`)
+        .replace(/@@LINK_(\d+)@@/g, (_match, linkIndex) => links[Number(linkIndex)] || "")
+        .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+        .replace(/__([^_]+)__/g, "<strong>$1</strong>")
+        .replace(/~~([^~]+)~~/g, "<del>$1</del>")
+        .replace(/\*([^*\n]+)\*/g, "<em>$1</em>")
+        .replace(/_([^_\n]+)_/g, "<em>$1</em>")
+        .replace(/\n/g, "<br>");
+    })
+    .join("");
 }
 
 function escapeHtml(value) {
