@@ -198,7 +198,7 @@ function parseArchive(asset, release) {
 
   return {
     fileName: asset.name,
-    displayName: `${match[1]}-${match[2]}-${match[3]}.zip`,
+    displayName: cleanArchiveDisplayName(asset.name),
     name: match[1],
     mcVersion: match[2],
     buildVersion: match[3],
@@ -342,14 +342,21 @@ function renderArchiveTitle(file) {
   const requirementClass = file.required ? "requirement-icon--required" : "requirement-icon--optional";
   const kindClass = file.kind === "addition" ? "archive-kind--addition" : "archive-kind--version";
   const mark = file.required ? "!" : "*";
+  const displayName = cleanArchiveDisplayName(file.displayName || file.fileName);
 
   return `
     <div class="archive-title">
       <span class="requirement-icon ${requirementClass}" title="${escapeAttr(file.requiredLabel)}">${mark}</span>
-      <strong>${escapeHtml(file.displayName || file.fileName)}</strong>
+      <strong>${escapeHtml(displayName)}</strong>
       <span class="archive-kind ${kindClass}">${escapeHtml(file.kindLabel)}</span>
     </div>
   `;
+}
+
+function cleanArchiveDisplayName(fileName) {
+  const value = String(fileName || "");
+  const match = value.match(/^(.+?)(?:\+[^/\\]+)?(\.zip)$/i);
+  return match ? `${match[1]}${match[2]}` : value.split("+")[0];
 }
 
 function renderUpdates(files) {
