@@ -198,6 +198,7 @@ function parseArchive(asset, release) {
 
   return {
     fileName: asset.name,
+    displayName: `${match[1]}-${match[2]}-${match[3]}.zip`,
     name: match[1],
     mcVersion: match[2],
     buildVersion: match[3],
@@ -345,7 +346,7 @@ function renderArchiveTitle(file) {
   return `
     <div class="archive-title">
       <span class="requirement-icon ${requirementClass}" title="${escapeAttr(file.requiredLabel)}">${mark}</span>
-      <strong>${escapeHtml(file.fileName)}</strong>
+      <strong>${escapeHtml(file.displayName || file.fileName)}</strong>
       <span class="archive-kind ${kindClass}">${escapeHtml(file.kindLabel)}</span>
     </div>
   `;
@@ -960,30 +961,29 @@ function isMarkdownBlockStart(line) {
 }
 
 function renderInlineMarkdown(source) {
-  return String(source)
-    .split(/(`[^`]+`)/g)
-    .map((part) => {
-      if (/^`[^`]+`$/.test(part)) {
-        return `<code>${escapeHtml(part.slice(1, -1))}</code>`;
-      }
+  const tokens = [];
+  const saveToken = (html) => {
+    const marker = `\uE000${tokens.length}\uE001`;
+    tokens.push(html);
+    return marker;
+  };
 
-      const links = [];
-      return escapeHtml(part)
-        .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_match, label, href) => {
-          const marker = `@@LINK_${links.length}@@`;
-          links.push(`<a href="${escapeAttr(href)}" target="_blank" rel="noreferrer">${label}</a>`);
-          return marker;
-        })
-        .replace(/(https?:\/\/[^\s<]+)/g, (url) => `<a href="${escapeAttr(url)}" target="_blank" rel="noreferrer">${url}</a>`)
-        .replace(/@@LINK_(\d+)@@/g, (_match, linkIndex) => links[Number(linkIndex)] || "")
-        .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-        .replace(/__([^_]+)__/g, "<strong>$1</strong>")
-        .replace(/~~([^~]+)~~/g, "<del>$1</del>")
-        .replace(/\*([^*\n]+)\*/g, "<em>$1</em>")
-        .replace(/_([^_\n]+)_/g, "<em>$1</em>")
-        .replace(/\n/g, "<br>");
-    })
-    .join("");
+  let text = String(source)
+    .replace(/`([^`\n]+)`/g, (_match, code) => saveToken(`<code>${escapeHtml(code)}</code>`))
+    .replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (_match, label, href) => {
+      return saveToken(`<a href="${escapeAttr(href)}" target="_blank" rel="noreferrer">${renderInlineMarkdown(label)}</a>`);
+    });
+
+  text = escapeHtml(text)
+    .replace(/(https?:\/\/[^\s<]+)/g, (url) => `<a href="${escapeAttr(url)}" target="_blank" rel="noreferrer">${url}</a>`)
+    .replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/__([\s\S]+?)__/g, "<strong>$1</strong>")
+    .replace(/~~([\s\S]+?)~~/g, "<del>$1</del>")
+    .replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, "$1<em>$2</em>")
+    .replace(/(^|[^_])_([^_\n]+?)_(?!_)/g, "$1<em>$2</em>")
+    .replace(/\n/g, "<br>");
+
+  return text.replace(/\uE000(\d+)\uE001/g, (_match, tokenIndex) => tokens[Number(tokenIndex)] || "");
 }
 
 function escapeHtml(value) {
