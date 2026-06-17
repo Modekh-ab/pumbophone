@@ -409,8 +409,7 @@ details:not([open]) > .details-content {
 }
 
 .download-card {
-  display: grid;
-  grid-template-columns: auto 1fr;
+  display: block;
   gap: 0.75rem;
   align-items: start;
   margin-top: 1rem;
@@ -424,17 +423,55 @@ details:not([open]) > .details-content {
   color: #fffdf0;
 }
 
+.archive-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.requirement-icon {
+  width: 1.35rem;
+  height: 1.35rem;
+  display: inline-grid;
+  place-items: center;
+  color: #fffdf0;
+  line-height: 1;
+  text-shadow: 2px 2px 0 #111;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.62);
+}
+
+.requirement-icon--required {
+  background: #c93232;
+}
+
+.requirement-icon--optional {
+  color: #0a2034;
+  background: #7fd7ff;
+  text-shadow: none;
+}
+
+.archive-kind {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.55rem;
+  padding: 0.14rem 0.42rem;
+  color: #10100d;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.48);
+}
+
+.archive-kind--version {
+  background: #e2ce72;
+}
+
+.archive-kind--addition {
+  color: #06182a;
+  background: #84c7e8;
+}
+
 .download-card p {
   margin: 0.35rem 0 0;
   color: var(--ink-dim);
-}
-
-.status-dot {
-  width: 18px;
-  height: 18px;
-  margin-top: 0.22rem;
-  background: var(--paper);
-  box-shadow: 3px 3px 0 #111;
 }
 
 .versions-panel {

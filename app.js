@@ -96,6 +96,11 @@ function toggleDetails(details, content) {
 }
 
 async function loadReleases() {
+  if (isLocalPreview()) {
+    await loadLocalReleases();
+    return;
+  }
+
   const repo = detectRepository();
   if (!repo) {
     renderEmptyReleaseState("Репозиторий не определён.");
@@ -124,6 +129,33 @@ async function loadReleases() {
     renderUpdates(files);
   } catch (error) {
     renderEmptyReleaseState("GitHub Releases сейчас недоступны.");
+    console.warn(error);
+  }
+}
+
+function isLocalPreview() {
+  return ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+}
+
+async function loadLocalReleases() {
+  try {
+    const response = await fetch("resources/local-releases/releases.json", { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`Local releases ${response.status}`);
+    }
+
+    const releases = await response.json();
+    const files = collectBuildArchives(releases);
+    if (!files.length) {
+      renderEmptyReleaseState("Локальные тестовые архивы не найдены.");
+      return;
+    }
+
+    files.sort(compareArchives);
+    renderDownloads(files);
+    renderUpdates(files);
+  } catch (error) {
+    renderEmptyReleaseState("Локальные тестовые релизы не найдены.");
     console.warn(error);
   }
 }
@@ -157,16 +189,22 @@ function collectBuildArchives(releases) {
 }
 
 function parseArchive(asset, release) {
-  const match = asset.name.match(/^(.+)-(\d+(?:\.\d+){1,3})-([A-Za-z0-9][A-Za-z0-9._-]*)\.zip$/i);
+  const match = asset.name.match(/^(.+)-(\d+(?:\.\d+){1,3})-([^+]+?)(?:\+(.+))?\.zip$/iu);
   if (!match) {
     return null;
   }
+
+  const flags = applyArchiveFlagOverrides(parseArchiveFlags(match[4]), asset);
 
   return {
     fileName: asset.name,
     name: match[1],
     mcVersion: match[2],
     buildVersion: match[3],
+    kind: flags.kind,
+    kindLabel: flags.kindLabel,
+    required: flags.required,
+    requiredLabel: flags.requiredLabel,
     size: asset.size,
     downloads: asset.download_count,
     url: asset.browser_download_url,
@@ -175,6 +213,55 @@ function parseArchive(asset, release) {
     releaseBody: release.body || "",
     releaseUrl: release.html_url
   };
+}
+
+function applyArchiveFlagOverrides(flags, asset) {
+  const kind = asset.kind === "addition" || asset.kind === "version" ? asset.kind : flags.kind;
+  const required = typeof asset.required === "boolean" ? asset.required : flags.required;
+
+  return {
+    kind,
+    kindLabel: kind === "addition" ? "дополнение" : "версия",
+    required,
+    requiredLabel: required ? "обязательно" : "необязательно"
+  };
+}
+
+function parseArchiveFlags(value = "") {
+  const rawTokens = String(value)
+    .split(/[+_-]/)
+    .map(normalizeMetaToken)
+    .filter(Boolean);
+  const tokens = new Set(rawTokens);
+
+  const isAddition =
+    hasAny(tokens, ["addon", "add", "addition", "update", "patch", "hotfix", "dop", "dopolnenie"]) ||
+    hasAny(tokens, ["дополнение", "доп", "апдейт", "патч"]);
+  const isVersion =
+    hasAny(tokens, ["version", "full", "build", "release"]) ||
+    hasAny(tokens, ["версия", "полная"]);
+  const hasRequired = hasAny(tokens, ["required", "req", "mandatory", "must", "obyazatelno"]) || hasAny(tokens, ["обязательно", "обяз"]);
+  const hasOptional = hasAny(tokens, ["optional", "opt", "notrequired", "neobyazatelno"]) || hasAny(tokens, ["необязательно", "опционально"]);
+
+  const kind = isAddition && !isVersion ? "addition" : "version";
+  const required = hasOptional ? false : hasRequired ? true : kind === "version";
+
+  return {
+    kind,
+    kindLabel: kind === "addition" ? "дополнение" : "версия",
+    required,
+    requiredLabel: required ? "обязательно" : "необязательно"
+  };
+}
+
+function normalizeMetaToken(value) {
+  return String(value)
+    .toLowerCase()
+    .replace(/[^a-zа-яё0-9]/giu, "");
+}
+
+function hasAny(tokens, values) {
+  return values.some((value) => tokens.has(value));
 }
 
 function compareArchives(a, b) {
@@ -220,17 +307,16 @@ function renderDownloads(files) {
   els.version.innerHTML = `
     <span>Minecraft: Forge ${escapeHtml(latest.mcVersion)}</span>
     <span>Сборка: ${escapeHtml(latest.buildVersion)}</span>
-    <span>${formatDate(latest.createdAt)}</span>
   `;
 
   els.latest.innerHTML = `
-    <span class="status-dot"></span>
     <div>
-      <strong>${escapeHtml(latest.fileName)}</strong>
+      ${renderArchiveTitle(latest)}
       <p>
         <a href="${escapeAttr(latest.url)}">/скачать_новейшую</a>
-        <span class="muted"> ${formatBytes(latest.size)} · ${latest.downloads ?? 0} скач.</span>
+        <span class="muted"> ${formatBytes(latest.size)}</span>
       </p>
+      <p class="muted">${formatMoscowDateTime(latest.createdAt)}</p>
     </div>
   `;
 
@@ -242,14 +328,26 @@ function renderDownloads(files) {
 function renderVersionItem(file) {
   return `
     <article class="version-item">
-      <strong>${escapeHtml(file.fileName)}</strong>
+      ${renderArchiveTitle(file)}
       <div class="version-meta">
-        <span class="tag">MC ${escapeHtml(file.mcVersion)}</span>
-        <span class="tag">build ${escapeHtml(file.buildVersion)}</span>
-        <span class="tag">${formatDate(file.createdAt)}</span>
+        <span class="tag">${formatMoscowDateTime(file.createdAt)}</span>
       </div>
       <p><a href="${escapeAttr(file.url)}">/скачать</a></p>
     </article>
+  `;
+}
+
+function renderArchiveTitle(file) {
+  const requirementClass = file.required ? "requirement-icon--required" : "requirement-icon--optional";
+  const kindClass = file.kind === "addition" ? "archive-kind--addition" : "archive-kind--version";
+  const mark = file.required ? "!" : "*";
+
+  return `
+    <div class="archive-title">
+      <span class="requirement-icon ${requirementClass}" title="${escapeAttr(file.requiredLabel)}">${mark}</span>
+      <strong>${escapeHtml(file.fileName)}</strong>
+      <span class="archive-kind ${kindClass}">${escapeHtml(file.kindLabel)}</span>
+    </div>
   `;
 }
 
@@ -261,8 +359,7 @@ function renderUpdates(files) {
         <article class="update-item">
           <strong>${escapeHtml(file.releaseName)}</strong>
           <div class="version-meta">
-            <span class="tag">MC ${escapeHtml(file.mcVersion)}</span>
-            <span class="tag">build ${escapeHtml(file.buildVersion)}</span>
+            <span class="tag">v${escapeHtml(file.buildVersion)}</span>
           </div>
           <div class="update-body">${linkify(escapeHtml(body))}</div>
         </article>
@@ -273,7 +370,6 @@ function renderUpdates(files) {
 
 function renderEmptyReleaseState(message) {
   els.latest.innerHTML = `
-    <span class="status-dot"></span>
     <div>
       <strong>${escapeHtml(message)}</strong>
     </div>
@@ -735,11 +831,18 @@ function normalizeName(value) {
   return String(value).toLowerCase().replace(/[^a-z0-9а-яё]/gi, "");
 }
 
-function formatDate(date) {
+function formatMoscowDateTime(date) {
   if (!date) {
     return "без даты";
   }
-  return new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(date));
+  return `${new Intl.DateTimeFormat("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Moscow"
+  }).format(new Date(date))} МСК`;
 }
 
 function formatBytes(bytes = 0) {
