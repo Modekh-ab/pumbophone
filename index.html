@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#17130f" />
+    <title>Пумбофон</title>
+    <link rel="preload" href="resources/fonts/minecraft-rus.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body id="top">
+    <a class="head-link" href="#top" aria-label="Вверх">
+      <canvas id="headCanvas" class="head-orbit" data-head-canvas aria-label="Nekhafgevit2039"></canvas>
+    </a>
+
+    <main class="site-shell">
+      <section class="hero" aria-labelledby="buildTitle">
+        <div class="hero-media" id="heroMedia">
+          <img class="hero-image is-blurred" id="fastfoodImage" src="resources/img/fastfood.png" alt="Фастфуд Minecraft-сборка" />
+          <div class="hero-shade"></div>
+          <div class="hunger-gate" id="hungerGate">
+            <p>НЕ СМОТРИ ЕСЛИ ГОЛОДЕН</p>
+            <button class="command-button command-button--light" id="peekButton" type="button">/глянуть</button>
+          </div>
+          <div class="hero-title">
+            <h1 id="buildTitle">ФАСТФУД</h1>
+            <p class="hero-subtitle">Ну ты дурак?</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="command-grid" aria-label="Информация о сборке">
+        <details class="command-panel">
+          <summary>/чё_за</summary>
+          <div class="details-content">
+            <div class="subcommands">
+              <details class="mini-panel" open>
+                <summary>/версия</summary>
+                <div class="details-content">
+                  <div class="version-lines" id="versionInfo">
+                    <span>Minecraft: ожидает релиз</span>
+                    <span>Сборка: ожидает релиз</span>
+                  </div>
+                </div>
+              </details>
+
+              <details class="mini-panel">
+                <summary>/моды</summary>
+                <div class="details-content">
+                  <ul class="mod-list" id="modsList"></ul>
+                </div>
+              </details>
+            </div>
+          </div>
+        </details>
+
+        <details class="command-panel">
+          <summary>/скачать</summary>
+          <div class="details-content">
+            <div class="download-card" id="latestDownload">
+              <span class="status-dot"></span>
+              <div>
+                <strong>Ищу новейший архив...</strong>
+                <p>GitHub Releases проверяются автоматически.</p>
+              </div>
+            </div>
+
+            <details class="mini-panel versions-panel">
+              <summary>/старьё</summary>
+              <div class="details-content">
+                <div class="version-stack" id="oldVersions"></div>
+              </div>
+            </details>
+          </div>
+        </details>
+
+        <details class="command-panel">
+          <summary>/обновы</summary>
+          <div class="details-content">
+            <div class="updates-stack" id="updatesList"></div>
+          </div>
+        </details>
+      </section>
+    </main>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
