@@ -1,87 +1,68 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#17130f" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>Пумбофон</title>
+    <link rel="icon" href="resources/img/favicon-frames/frame-000.png?v=site-icon-2" type="image/png" />
+    <link rel="shortcut icon" href="resources/img/favicon-frames/frame-000.png?v=site-icon-2" type="image/png" />
     <link rel="preload" href="resources/fonts/minecraft-rus.ttf" as="font" type="font/ttf" crossorigin />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="preload" href="resources/fonts/MinecraftTitle.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="stylesheet" href="styles.css?v=split-6" />
   </head>
   <body id="top">
     <a class="head-link" href="#top" aria-label="Вверх">
       <canvas id="headCanvas" class="head-orbit" data-head-canvas aria-label="Nekhafgevit2039"></canvas>
     </a>
 
+    <div class="top-actions" aria-label="Быстрые команды">
+      <button class="inventory-toggle" id="inventoryToggle" type="button" aria-pressed="true">
+        <span class="power-mark" aria-hidden="true">⏻</span>
+        <span class="toggle-command" id="inventoryToggleText">/отключить_инвентарь</span>
+      </button>
+      <a class="faq-jump" href="#faq" aria-label="Перейти к факью">
+        <span class="question-mark" aria-hidden="true">?</span>
+        <span class="toggle-command">/факью</span>
+      </a>
+    </div>
+
     <main class="site-shell">
-      <section class="hero" aria-labelledby="buildTitle">
-        <div class="hero-media" id="heroMedia">
-          <img class="hero-image is-blurred" id="fastfoodImage" src="resources/img/fastfood.png" alt="Фастфуд Minecraft-сборка" />
-          <div class="hero-shade"></div>
-          <div class="hunger-gate" id="hungerGate">
-            <p>НЕ СМОТРИ ЕСЛИ ГОЛОДЕН</p>
-            <button class="command-button command-button--light" id="peekButton" type="button">/глянуть</button>
+      <section class="inventory-stage" id="inventoryStage" aria-label="Инвентарь выбора сборки">
+        <div class="inventory-window">
+          <div class="player-preview">
+            <div class="skin-nickname" id="skinNickname"></div>
+            <button class="skin-arrow skin-arrow--prev" data-skin-slide="prev" type="button" aria-label="Предыдущий скин">‹</button>
+            <canvas id="playerCanvas" class="player-canvas" data-player-canvas aria-label="Игрок"></canvas>
+            <button class="skin-arrow skin-arrow--next" data-skin-slide="next" type="button" aria-label="Следующий скин">›</button>
+            <div class="skin-dots" id="skinDots" aria-label="Скины игрока"></div>
           </div>
-          <div class="hero-title">
-            <h1 id="buildTitle">ФАСТФУД</h1>
-            <p class="hero-subtitle">Ну ты дурак?</p>
-          </div>
+
+          <div class="inventory-overlay inventory-overlay--armor" data-inventory-slots="4" aria-hidden="true"></div>
+          <div class="inventory-overlay inventory-overlay--offhand" data-inventory-slots="1" aria-hidden="true"></div>
+          <div class="inventory-overlay inventory-overlay--craft" data-inventory-slots="4" aria-hidden="true"></div>
+          <div class="inventory-overlay inventory-overlay--result" data-inventory-slots="1" aria-hidden="true"></div>
+          <div class="inventory-overlay inventory-overlay--main" data-inventory-slots="27" aria-hidden="true"></div>
+          <div class="hotbar" id="hotbar" aria-label="Сборки"></div>
         </div>
       </section>
 
-      <section class="command-grid" aria-label="Информация о сборке">
-        <details class="command-panel">
-          <summary>/чё_за</summary>
-          <div class="details-content">
-            <div class="subcommands">
-              <details class="mini-panel" open>
-                <summary>/версия</summary>
-                <div class="details-content">
-                  <div class="version-lines" id="versionInfo">
-                    <span>Minecraft: ожидает релиз</span>
-                    <span>Сборка: ожидает релиз</span>
-                  </div>
-                </div>
-              </details>
-
-              <details class="mini-panel">
-                <summary>/моды</summary>
-                <div class="details-content">
-                  <ul class="mod-list" id="modsList"></ul>
-                </div>
-              </details>
-            </div>
-          </div>
-        </details>
-
-        <details class="command-panel">
-          <summary>/скачать</summary>
-          <div class="details-content">
-            <div class="download-card" id="latestDownload">
-              <div>
-                <strong>Ищу новейший архив...</strong>
-                <p>GitHub Releases проверяются автоматически.</p>
-              </div>
-            </div>
-
-            <details class="mini-panel versions-panel">
-              <summary>/старьё</summary>
-              <div class="details-content">
-                <div class="version-stack" id="oldVersions"></div>
-              </div>
-            </details>
-          </div>
-        </details>
-
-        <details class="command-panel">
-          <summary>/обновы</summary>
-          <div class="details-content">
-            <div class="updates-stack" id="updatesList"></div>
-          </div>
-        </details>
+      <div class="slider-controls" id="sliderControls" aria-label="Переключение сборок"></div>
+      <section class="builds-region is-waiting" id="buildsRegion" aria-live="polite"></section>
+      <section class="faq-section" id="faq" aria-labelledby="faqTitle">
+        <h2 id="faqTitle">/факью</h2>
+        <div class="faq-list" id="faqList"></div>
       </section>
     </main>
 
-    <script type="module" src="app.js?v=archive-display-2"></script>
+    <script type="module" src="app.js?v=split-6"></script>
   </body>
 </html>
+
+
+
+
+

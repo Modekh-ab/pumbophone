@@ -1,0 +1,70 @@
+[
+  {
+    "name": "Локальный тест 1.4",
+    "tag_name": "local-fastfood-1.4",
+    "published_at": "2026-06-17T12:40:00Z",
+    "body": "**Проверка** архива с `+optional+addon` в имени.",
+    "html_url": "#",
+    "assets": [
+      {
+        "name": "Fastfood-1.12.2-1.4+optional+addon.zip",
+        "browser_download_url": "resources/local-releases/Fastfood-1.12.2-1.4+optional+addon.zip",
+        "size": 22,
+        "download_count": 0,
+        "created_at": "2026-06-17T12:40:00Z"
+      }
+    ]
+  },
+  {
+    "name": "Локальный тест 1.2",
+    "tag_name": "local-fastfood-1.2",
+    "published_at": "2026-06-17T12:20:00Z",
+    "body": "## Что нового\n\n- Добавлена **полная версия** сборки.\n- Проверка `inline code`.\n- Ссылка: [GitHub](https://github.com/)\n\n```txt\nmods/\nconfig/\n```\n\n> Локальная проверка Markdown.",
+    "html_url": "#",
+    "assets": [
+      {
+        "name": "Fastfood-1.12.2-1.2.zip",
+        "browser_download_url": "resources/local-releases/Fastfood-1.12.2-1.2.zip",
+        "size": 22,
+        "download_count": 0,
+        "created_at": "2026-06-17T12:20:00Z",
+        "kind": "version",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "Локальный тест 1.1",
+    "tag_name": "local-fastfood-1.1",
+    "published_at": "2026-06-17T12:10:00Z",
+    "body": "### Необязательное дополнение\n\n- Можно поставить отдельно.\n- Не ломает старую версию.\n\n~~Старый текст~~ заменен новым.",
+    "html_url": "#",
+    "assets": [
+      {
+        "name": "Fastfood-1.12.2-1.1.zip",
+        "browser_download_url": "resources/local-releases/Fastfood-1.12.2-1.1.zip",
+        "size": 22,
+        "download_count": 0,
+        "created_at": "2026-06-17T12:10:00Z",
+        "kind": "addition",
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "Локальный тест 1.0",
+    "tag_name": "local-fastfood-1.0",
+    "published_at": "2026-06-17T12:00:00Z",
+    "body": "Локальная проверка старого формата имени. По умолчанию это обязательная версия.",
+    "html_url": "#",
+    "assets": [
+      {
+        "name": "Fastfood-1.12.2-1.0.zip",
+        "browser_download_url": "resources/local-releases/Fastfood-1.12.2-1.0.zip",
+        "size": 22,
+        "download_count": 0,
+        "created_at": "2026-06-17T12:00:00Z"
+      }
+    ]
+  }
+]
