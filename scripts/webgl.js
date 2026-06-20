@@ -6,7 +6,7 @@
 
     const hoverTarget = canvas.closest("a") || canvas;
     let isPaused = false;
-    let rotation = 0;
+    let rotation = Math.PI;
     let lastTime = 0;
 
     hoverTarget.addEventListener("pointerenter", () => {
@@ -73,9 +73,10 @@ export async function startPlayer(canvas, initialSkin) {
         const rect = canvas.getBoundingClientRect();
         const centerX = rect.left + rect.width * 0.5;
         const centerY = rect.top + rect.height * 0.43;
-        const x = (event.clientX - centerX) / Math.max(rect.width * 0.5, 1);
-        const y = (event.clientY - centerY) / Math.max(rect.height * 0.5, 1);
-        targetYaw = clamp(x, -1, 1) * 0.72;
+        const trackingRect = canvas.closest(".inventory-window")?.getBoundingClientRect() || rect;
+        const x = (event.clientX - centerX) / Math.max(trackingRect.width * 0.9, 1);
+        const y = (event.clientY - centerY) / Math.max(trackingRect.height * 0.9, 1);
+        targetYaw = clamp(x, -1, 1) * 0.8;
         targetPitch = clamp(y, -1, 1) * -0.5;
     });
 
@@ -83,8 +84,8 @@ export async function startPlayer(canvas, initialSkin) {
         yaw += (targetYaw - yaw) * 0.28;
         pitch += (targetPitch - pitch) * 0.28;
         const idle = Math.sin(time * 0.0018) * 0.012;
-        const bodyYaw = yaw * 0.52;
-        const bodyPitch = pitch * -0.26;
+        const bodyYaw = yaw * 0.68;
+        const bodyPitch = pitch * -0.3;
         const model = mat4Multiply(mat4RotateX(bodyPitch), mat4RotateY(Math.PI + bodyYaw));
         const head = mat4Multiply(mat4RotateX(pitch), mat4RotateY(yaw + idle));
 

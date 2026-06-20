@@ -1,0 +1,99 @@
+@font-face {
+    font-family: "Minecraft Rus";
+    src: url("../resources/fonts/minecraft-rus.ttf") format("truetype");
+    font-display: swap;
+}
+@font-face {
+    font-family: "MinecraftTitle";
+    src: url("../resources/fonts/MinecraftTitle.ttf") format("truetype");
+    font-display: swap;
+}
+
+:root {
+    --bg: #17130f;
+    --paper: #f3d365;
+    --paper-dark: #d7a731;
+    --leaf: #4c8b3b;
+    --leaf-dark: #1f4d2e;
+    --tomato: #c93f32;
+    --ink: #fff9cf;
+    --ink-dim: #d8cfa6;
+    --charcoal: #251d18;
+    --panel: rgba(21, 17, 14, 0.84);
+    --panel-soft: rgba(255, 249, 207, 0.07);
+    --shadow: 0 22px 70px rgba(0, 0, 0, 0.42);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+    scroll-behavior: smooth;
+    background: var(--bg);
+}
+
+body {
+    min-height: 100%;
+    margin: 0;
+    color: var(--ink);
+    font-family: "Minecraft Rus", "Trebuchet MS", Arial, sans-serif;
+    line-height: 1.55;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px) 0 0 / 36px 36px,
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px) 0 0 / 36px 36px,
+    radial-gradient(circle at 78% 8%, rgba(201, 63, 50, 0.2), transparent 30rem),
+    linear-gradient(135deg, #17130f 0%, #251d18 52%, #102a1c 100%);
+    overflow-x: hidden;
+}
+
+button,
+summary,
+a {
+    font: inherit;
+}
+
+a {
+    color: var(--paper);
+    text-decoration: none;
+}
+
+a:hover,
+a:focus-visible {
+    color: #ffffff;
+}
+
+.head-link {
+    position: fixed;
+    z-index: 10;
+    top: 40px;
+    left: 80px;
+    width: clamp(78px, 8vw, 132px);
+    height: clamp(78px, 8vw, 132px);
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle at 50% 48%, rgba(255, 244, 163, 0.42), rgba(255, 244, 163, 0.12) 42%, rgba(76, 139, 59, 0.08) 72%, transparent 74%);
+    filter: drop-shadow(0 0 12px rgba(255, 0, 251, 0.82)) drop-shadow(0 12px 18px rgba(0, 0, 0, 0.68));
+    transition: transform 180ms ease, filter 180ms ease;
+}
+
+.head-link:hover,
+.head-link:focus-visible {
+    transform: translateY(-2px) scale(1.04);
+    filter: drop-shadow(0 0 18px rgba(255, 244, 163, 0.95)) drop-shadow(0 14px 22px rgba(0, 0, 0, 0.72));
+    outline: none;
+}
+
+.head-link:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+.head-orbit {
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    pointer-events: none;
+}
+
+
+

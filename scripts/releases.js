@@ -1,4 +1,4 @@
-﻿import { normalizeName } from "./utils.js?v=split-6";
+import { normalizeName } from "./utils.js?v=split-19";
 
 export async function fetchReleasePayload() {
     if (isLocalPreview()) {
