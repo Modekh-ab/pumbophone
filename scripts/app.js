@@ -10,6 +10,7 @@ const SKIN_NAME_COUNTS = SKINS.reduce((counts, skin) => {
 }, new Map());
 
 const state = {
+
     inventoryEnabled: true,
     selectedBuildId: null,
     sliderIndex: 0,
