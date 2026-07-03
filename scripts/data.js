@@ -5,13 +5,31 @@
         name: "Фастфуд",
         assetName: "Fastfood",
         subtitle: "Ну ты дурак?",
-        image: "resources/img/fastfood.png",
-        icon: "resources/img/items/fastfood_item.png",
-        mods: [],
-        gate: {
-            text: "НЕ СМОТРИ ЕСЛИ ГОЛОДЕН",
-            button: "/глянуть"
-        }
+        image: "resources/img/fastfood/panoramas/final_adam39_1/panorama_0.png",
+        icon: "resources/img/fastfood/item.png",
+        panoramas: [
+            "resources/img/fastfood/panoramas/final_adam39_1",
+            "resources/img/fastfood/panoramas/final_adam39_2",
+            "resources/img/fastfood/panoramas/final_antegripin_1",
+            "resources/img/fastfood/panoramas/final_antegripin_2",
+            "resources/img/fastfood/panoramas/final_antegripin_3",
+            "resources/img/fastfood/panoramas/final_explosed_adam39",
+            "resources/img/fastfood/panoramas/final_explosed_home",
+            "resources/img/fastfood/panoramas/final_explosed_luzhniki",
+            "resources/img/fastfood/panoramas/final_fgg5_1",
+            "resources/img/fastfood/panoramas/final_fgg5_2",
+            "resources/img/fastfood/panoramas/final_home_1",
+            "resources/img/fastfood/panoramas/final_home_angar_1",
+            "resources/img/fastfood/panoramas/final_home_angar_2",
+            "resources/img/fastfood/panoramas/final_home_angar_3",
+            "resources/img/fastfood/panoramas/final_home_angar_4",
+            "resources/img/fastfood/panoramas/final_luzniki_1",
+            "resources/img/fastfood/panoramas/final_luzniki_2",
+            "resources/img/fastfood/panoramas/final_luzniki_3",
+            "resources/img/fastfood/panoramas/final_luzniki_4",
+            "resources/img/fastfood/panoramas/final_luzniki_5"
+        ],
+        mods: []
     },
     {
         id: "duoskuchno",
@@ -19,8 +37,11 @@
         name: "ДуоСкучно",
         assetName: "DuoSkuchno",
         subtitle: "Ну что? В бед идём?",
-        image: "resources/img/duoskuchno.png",
-        icon: "resources/img/items/duoskuchno_item.png",
+        image: "resources/img/duoskuchno/panoramas/main/panorama_0.png",
+        icon: "resources/img/duoskuchno/item.png",
+        panoramas: [
+            "resources/img/duoskuchno/panoramas/main"
+        ],
         mods: []
     }
 ];

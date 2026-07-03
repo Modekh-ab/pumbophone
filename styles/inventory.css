@@ -9,7 +9,8 @@
 }
 
 .inventory-toggle,
-.faq-jump {
+.faq-jump,
+.github-jump {
     min-height: 46px;
     display: inline-flex;
     align-items: center;
@@ -27,7 +28,9 @@
 .inventory-toggle:hover,
 .inventory-toggle:focus-visible,
 .faq-jump:hover,
-.faq-jump:focus-visible {
+.faq-jump:focus-visible,
+.github-jump:hover,
+.github-jump:focus-visible {
     border-color: #fff4a3;
     color: #fffdf0;
     background: rgba(28, 23, 18, 0.92);
@@ -36,12 +39,14 @@
 }
 
 .inventory-toggle:active,
-.faq-jump:active {
+.faq-jump:active,
+.github-jump:active {
     transform: translateY(1px);
 }
 
 .power-mark,
-.question-mark {
+.question-mark,
+.github-icon {
     width: 1.7rem;
     height: 1.7rem;
     display: inline-grid;
@@ -55,6 +60,10 @@
 .question-mark {
     color: #84c7e8;
     font-weight: 700;
+}
+
+.github-icon {
+    object-fit: contain;
 }
 
 .toggle-command {

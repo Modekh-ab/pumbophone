@@ -1,4 +1,4 @@
-import { normalizeName } from "./utils.js?v=split-19";
+import { normalizeName } from "./utils.js?v=split-22";
 
 export async function fetchReleasePayload() {
     if (isLocalPreview()) {
@@ -180,8 +180,6 @@ function tokenizeVersion(version) {
         .split(/[._-]/)
         .map((part) => (/^\d+$/.test(part) ? Number(part) : part.toLowerCase()));
 }
-
-
 
 
 

@@ -1,7 +1,8 @@
-import { BUILDS, FAQS, SKINS } from "./data.js?v=split-19";
-import { collectBuildArchives, compareArchives, fetchReleasePayload } from "./releases.js?v=split-19";
-import { escapeAttr, escapeHtml, formatBytes, formatMoscowDateTime, renderMarkdown } from "./utils.js?v=split-19";
-import { startHead, startPlayer } from "./webgl.js?v=split-19";
+import { BUILDS, FAQS, SKINS } from "./data.js?v=split-22";
+import { collectBuildArchives, compareArchives, fetchReleasePayload } from "./releases.js?v=split-22";
+import { escapeAttr, escapeHtml, formatBytes, formatMoscowDateTime, renderMarkdown } from "./utils.js?v=split-22";
+import { initBuildPanoramas } from "./panorama.js?v=split-25";
+import { startHead, startPlayer } from "./webgl.js?v=split-22";
 
 const SKIN_NAME_COUNTS = SKINS.reduce((counts, skin) => {
     const base = numberedSkinBase(skin);
@@ -51,6 +52,7 @@ function init() {
   renderInventoryOverlays();
   renderSkinControls();
     renderBuilds();
+    initBuildPanoramas();
     renderFaq();
     renderSliderControls();
     bindInventoryToggle();
@@ -203,7 +205,7 @@ function renderBuild(build) {
       <section class="hero" aria-labelledby="build-title-${escapeAttr(build.id)}">
         <div class="hero-frame">
           <div class="hero-media">
-            <img class="hero-image ${build.gate ? "is-blurred" : ""}" data-hero-image src="${escapeAttr(build.image)}" alt="${escapeAttr(build.name)} Minecraft-сборка" />
+            ${renderHeroVisual(build)}
             <div class="hero-shade"></div>
             ${gate}
             <div class="hero-title">
@@ -278,6 +280,33 @@ function renderBuild(build) {
       </section>
     </article>
   `;
+}
+
+function renderHeroVisual(build) {
+    const panoramas = Array.isArray(build.panoramas) ? build.panoramas.filter(Boolean) : [];
+    if (panoramas.length) {
+        return `
+            <div
+              class="hero-panorama ${build.gate ? "is-blurred" : ""}"
+              data-hero-image
+              data-panorama
+              data-panorama-paths="${escapeAttr(JSON.stringify(panoramas))}"
+              aria-label="${escapeAttr(build.name)} Minecraft-панорама"
+              role="img"
+            ></div>
+            <div class="panorama-controls" aria-label="Управление панорамой">
+              <button class="panorama-control" type="button" data-panorama-speed aria-pressed="false" aria-label="Скорость панорамы x1">
+                <i data-lucide="chevrons-right" aria-hidden="true"></i>
+                <span data-panorama-speed-label>x1</span>
+              </button>
+              <button class="panorama-control" type="button" data-panorama-next aria-label="Следующая панорама">
+                <i data-lucide="rotate-cw" aria-hidden="true"></i>
+              </button>
+            </div>
+        `;
+    }
+
+    return `<img class="hero-image ${build.gate ? "is-blurred" : ""}" data-hero-image src="${escapeAttr(build.image)}" alt="${escapeAttr(build.name)} Minecraft-сборка" />`;
 }
 
 function renderFaq() {
@@ -835,7 +864,3 @@ async function startInventoryPlayer() {
 }
 
 init();
-
-
-
-

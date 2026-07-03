@@ -1,4 +1,4 @@
-﻿@media (max-width: 900px) {
+@media (max-width: 900px) {
     .site-shell {
         padding: 32px;
     }
@@ -45,7 +45,8 @@
     }
 
     .inventory-toggle,
-    .faq-jump {
+    .faq-jump,
+    .github-jump {
         min-height: 42px;
         padding: 0.36rem 0.48rem;
     }
