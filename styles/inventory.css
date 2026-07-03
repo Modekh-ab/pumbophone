@@ -341,6 +341,7 @@
 .item-texture {
     width: 66%;
     height: 66%;
+    display: block;
     object-fit: contain;
     image-rendering: pixelated;
 }

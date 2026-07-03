@@ -59,12 +59,18 @@ class PanoramaStage {
         this.lastTickTime = 0;
         this.controls = {
             speed: this.interactionRoot.querySelector("[data-panorama-speed]"),
+            prev: this.interactionRoot.querySelector("[data-panorama-prev]"),
             next: this.interactionRoot.querySelector("[data-panorama-next]")
         };
 
         this.bindInteraction();
         this.bindControls();
         this.updateSpeedControl();
+
+        if (this.controls.prev && paths.length < 2) {
+            this.controls.prev.disabled = true;
+        }
+
         if (this.controls.next && paths.length < 2) {
             this.controls.next.disabled = true;
         }
@@ -74,6 +80,11 @@ class PanoramaStage {
         if (paths.length > 1 && !this.reducedMotion) {
             window.setInterval(() => this.next(), PANORAMA_SWAP_MS);
         }
+    }
+
+    prev() {
+        this.index = (this.index - 1 + this.paths.length) % this.paths.length;
+        this.show(this.paths[this.index], false);
     }
 
     next() {
@@ -106,6 +117,7 @@ class PanoramaStage {
         });
 
         this.controls.speed?.addEventListener("click", () => this.toggleSpeed());
+        this.controls.prev?.addEventListener("click", () => this.prev());
         this.controls.next?.addEventListener("click", () => this.next());
     }
 
@@ -117,6 +129,7 @@ class PanoramaStage {
             if (this.isPaused) {
                 return;
             }
+
             this.interactionRoot.setPointerCapture?.(event.pointerId);
             this.isPaused = true;
             this.interactionRoot.classList.add("is-panorama-pressed");

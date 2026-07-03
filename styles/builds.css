@@ -616,6 +616,10 @@ details:not([open]) > .details-content {
     text-underline-offset: 4px;
 }
 
+.mod-list .mod-link {
+    color: #fffdf0;
+}
+
 .download-card {
     display: block;
     gap: 0.75rem;
@@ -675,6 +679,50 @@ details:not([open]) > .details-content {
 .archive-kind--addition {
     color: #06182a;
     background: #84c7e8;
+}
+
+.generated-kind {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.55rem;
+    padding: 0.14rem 0.42rem;
+    color: #10100d;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.48);
+}
+
+.generated-kind--full {
+    background: #9ee27a;
+}
+
+.generated-kind--incomplete {
+    background: #f0d36f;
+}
+
+.generated-archive-mark {
+    width: 1.35rem;
+    height: 1.35rem;
+    display: inline-block;
+    flex: 0 0 1.35rem;
+    background: #ffdf6f;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.62);
+}
+
+.generated-warning {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0.85rem 0;
+    padding: 0.75rem;
+    color: #fff4a3;
+    background: rgba(201, 50, 50, 0.18);
+    box-shadow: inset 4px 0 0 #c93232;
+}
+
+.generated-warning svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: 0 0 1.25rem;
+    color: #ffdf6f;
 }
 
 .download-card p {

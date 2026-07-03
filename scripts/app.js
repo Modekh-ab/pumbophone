@@ -1,9 +1,10 @@
-import { BUILDS, FAQS, SKINS } from "./data.js?v=split-22";
+import { BUILDS, FAQS, MODS, SKINS } from "./data.js?v=split-24";
 import { collectBuildArchives, compareArchives, fetchReleasePayload } from "./releases.js?v=split-22";
 import { escapeAttr, escapeHtml, formatBytes, formatMoscowDateTime, renderMarkdown } from "./utils.js?v=split-22";
-import { initBuildPanoramas } from "./panorama.js?v=split-25";
+import { initBuildPanoramas } from "./panorama.js?v=split-26";
 import { startHead, startPlayer } from "./webgl.js?v=split-22";
 
+const ITEM_TICK_MS = 50;
 const SKIN_NAME_COUNTS = SKINS.reduce((counts, skin) => {
     const base = numberedSkinBase(skin);
     counts.set(base, (counts.get(base) || 0) + 1);
@@ -44,7 +45,11 @@ const els = {
 };
 
 const buildRefs = new Map();
+const generatedVersionPackages = new Map();
+const hotbarItemAnimations = [];
 let setActivePlayerSkin = null;
+let jsZipImportPromise = null;
+let hotbarAnimationFrame = null;
 
 function init() {
   initAnimatedFavicon();
@@ -59,6 +64,7 @@ function init() {
     bindSkinControls();
     bindBuildSwipe();
     bindUpdateLinks();
+    bindGeneratedVersionDownloads();
     setInventoryEnabled(true);
     selectBuild(BUILDS[0]?.id, {scroll: false});
     initAnimatedDetails();
@@ -121,15 +127,150 @@ function renderHotbar() {
 
         return `
       <button class="hotbar-slot" type="button" data-build-id="${escapeAttr(build.id)}" data-item-name="${escapeAttr(build.name)}" aria-label="${escapeAttr(build.name)}">
-        <img class="item-texture" src="${escapeAttr(build.icon)}" width="16" height="16" alt="" />
+        <canvas class="item-texture" width="16" height="16" data-item-texture="${escapeAttr(build.icon)}" aria-hidden="true"></canvas>
       </button>
     `;
     });
 
     els.hotbar.innerHTML = slots.join("");
+    initHotbarItemTextures();
     els.hotbar.querySelectorAll("[data-build-id]").forEach((button) => {
         button.addEventListener("click", () => selectBuild(button.dataset.buildId, {scroll: true}));
     });
+}
+
+function initHotbarItemTextures() {
+    hotbarItemAnimations.length = 0;
+    if (hotbarAnimationFrame) {
+        cancelAnimationFrame(hotbarAnimationFrame);
+        hotbarAnimationFrame = null;
+    }
+
+    els.hotbar.querySelectorAll("[data-item-texture]").forEach((canvas) => {
+        initHotbarItemTexture(canvas);
+    });
+}
+
+async function initHotbarItemTexture(canvas) {
+    const src = canvas.dataset.itemTexture;
+    if (!src) {
+        return;
+    }
+
+    try {
+        const image = await loadImage(src);
+        const meta = await fetchItemTextureMeta(src);
+        const animation = createItemTextureAnimation(canvas, image, meta);
+        drawItemTextureFrame(animation, 0);
+
+        if (animation.frames.length > 1) {
+            hotbarItemAnimations.push(animation);
+            startHotbarItemAnimationLoop();
+        }
+    } catch (error) {
+        console.warn(error);
+    }
+}
+
+function loadImage(src) {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error(`Texture ${src} failed to load`));
+        image.src = src;
+    });
+}
+
+async function fetchItemTextureMeta(src) {
+    try {
+        const response = await fetch(`${src}.mcmeta`, {cache: "force-cache"});
+        if (!response.ok) {
+            return null;
+        }
+        return response.json();
+    } catch (_error) {
+        return null;
+    }
+}
+
+function createItemTextureAnimation(canvas, image, meta) {
+    const frameSize = image.width;
+    const frameCount = Math.max(1, Math.floor(image.height / frameSize));
+    const defaultFrameTime = Math.max(1, Number(meta?.animation?.frametime) || 1);
+    const rawFrames = Array.isArray(meta?.animation?.frames) ? meta.animation.frames : null;
+    const frames = rawFrames?.length
+        ? rawFrames.map((frame) => normalizeItemFrame(frame, defaultFrameTime)).filter((frame) => frame.index >= 0 && frame.index < frameCount)
+        : Array.from({length: frameCount}, (_frame, index) => ({index, time: defaultFrameTime}));
+
+    return {
+        canvas,
+        context: canvas.getContext("2d"),
+        image,
+        frameSize,
+        frames: frames.length ? frames : [{index: 0, time: defaultFrameTime}],
+        frameCursor: 0,
+        frameStartedAt: performance.now()
+    };
+}
+
+function normalizeItemFrame(frame, defaultFrameTime) {
+    if (typeof frame === "number") {
+        return {index: frame, time: defaultFrameTime};
+    }
+
+    return {
+        index: Number(frame?.index) || 0,
+        time: Math.max(1, Number(frame?.time) || defaultFrameTime)
+    };
+}
+
+function startHotbarItemAnimationLoop() {
+    if (hotbarAnimationFrame) {
+        return;
+    }
+
+    const tick = (time) => {
+        for (const animation of hotbarItemAnimations) {
+            advanceItemTextureAnimation(animation, time);
+        }
+        hotbarAnimationFrame = hotbarItemAnimations.length ? requestAnimationFrame(tick) : null;
+    };
+
+    hotbarAnimationFrame = requestAnimationFrame(tick);
+}
+
+function advanceItemTextureAnimation(animation, time) {
+    const frame = animation.frames[animation.frameCursor];
+    const duration = frame.time * ITEM_TICK_MS;
+    if (time - animation.frameStartedAt < duration) {
+        return;
+    }
+
+    animation.frameCursor = (animation.frameCursor + 1) % animation.frames.length;
+    animation.frameStartedAt = time;
+    drawItemTextureFrame(animation, animation.frameCursor);
+}
+
+function drawItemTextureFrame(animation, cursor) {
+    const frame = animation.frames[cursor];
+    const {canvas, context, image, frameSize} = animation;
+    if (!context || !frame) {
+        return;
+    }
+
+    context.imageSmoothingEnabled = false;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(
+        image,
+        0,
+        frame.index * frameSize,
+        frameSize,
+        frameSize,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 }
 
 function renderInventoryOverlays() {
@@ -153,6 +294,7 @@ function renderBuilds() {
             mods: root.querySelector("[data-mods-list]"),
             latest: root.querySelector("[data-latest-download]"),
             oldVersions: root.querySelector("[data-old-versions]"),
+            generatedVersions: root.querySelector("[data-generated-versions]"),
             updates: root.querySelector("[data-updates-list]")
         });
         renderMods(build, buildRefs.get(build.id));
@@ -265,6 +407,17 @@ function renderBuild(build) {
                 <div class="version-stack" data-old-versions></div>
               </div>
             </details>
+
+            <details class="mini-panel versions-panel">
+              <summary>/версии</summary>
+              <div class="details-content">
+                <div class="generated-warning">
+                  <i data-lucide="triangle-alert" aria-hidden="true"></i>
+                  <span>Версии были собраны автоматически, могут быть ошибки</span>
+                </div>
+                <div class="version-stack" data-generated-versions></div>
+              </div>
+            </details>
           </div>
         </details>
 
@@ -299,6 +452,9 @@ function renderHeroVisual(build) {
                 <i data-lucide="chevrons-right" aria-hidden="true"></i>
                 <span data-panorama-speed-label>x1</span>
               </button>
+              <button class="panorama-control" type="button" data-panorama-prev aria-label="Предудыщая панорама">
+                <i data-lucide="rotate-ccw" aria-hidden="true"></i>
+              </button>
               <button class="panorama-control" type="button" data-panorama-next aria-label="Следующая панорама">
                 <i data-lucide="rotate-cw" aria-hidden="true"></i>
               </button>
@@ -319,11 +475,38 @@ function renderFaq() {
       <details class="faq-item" ${index === 0 ? "open" : ""}>
         <summary>${escapeHtml(item.question)}</summary>
         <div class="details-content">
-          <div class="faq-answer markdown-body">${renderMarkdown(item.answer)}</div>
+          <div class="faq-answer markdown-body">${renderMarkdown(item.answer)}${renderFaqLegend(item.legend)}${item.after ? renderMarkdown(item.after) : ""}</div>
         </div>
       </details>
     `;
     }).join("");
+}
+
+function renderFaqLegend(items) {
+    if (!Array.isArray(items) || !items.length) {
+        return "";
+    }
+
+    const rows = items.map((item) => {
+        return `
+          <li class="faq-legend-item">
+            ${renderFaqLegendBadge(item)}
+            <span>${escapeHtml(item.text)}</span>
+          </li>
+        `;
+    }).join("");
+
+    return `<ul class="faq-legend">${rows}</ul>`;
+}
+
+function renderFaqLegendBadge(item) {
+    if (item.badge === "kind") {
+        const kindClass = item.variant === "addition" ? "archive-kind--addition" : "archive-kind--version";
+        return `<span class="archive-kind ${kindClass}">${escapeHtml(item.label)}</span>`;
+    }
+
+    const requirementClass = item.variant === "optional" ? "requirement-icon--optional" : "requirement-icon--required";
+    return `<span class="requirement-icon ${requirementClass}">${escapeHtml(item.label)}</span>`;
 }
 
 function bindInventoryToggle() {
@@ -450,6 +633,27 @@ function bindUpdateLinks() {
             target.classList.add("is-targeted");
             window.setTimeout(() => target.classList.remove("is-targeted"), 1400);
         });
+    });
+}
+
+function bindGeneratedVersionDownloads() {
+    els.buildsRegion?.addEventListener("click", async (event) => {
+        const link = event.target.closest("[data-generated-version-id]");
+        if (!link) {
+            return;
+        }
+        if (link.getAttribute("aria-busy") === "true") {
+            event.preventDefault();
+            return;
+        }
+
+        event.preventDefault();
+        const pack = generatedVersionPackages.get(link.dataset.generatedVersionId);
+        if (!pack) {
+            return;
+        }
+
+        await downloadGeneratedVersion(pack, link);
     });
 }
 
@@ -626,9 +830,34 @@ function renderMods(build, refs) {
         return;
     }
 
-    refs.mods.innerHTML = build.mods
-        .map((mod) => `<li><a href="${escapeAttr(mod.url)}" target="_blank" rel="noreferrer">${escapeHtml(mod.name)}</a></li>`)
+    const mods = build.mods
+        .map((mod) => resolveBuildMod(build, mod))
+        .filter(Boolean);
+
+    if (!mods.length) {
+        refs.mods.innerHTML = `<li class="muted">Список модов пока не указан.</li>`;
+        return;
+    }
+
+    refs.mods.innerHTML = mods
+        .map((mod) => {
+            return `
+              <li>
+                <a class="mod-link" href="${escapeAttr(mod.url)}" target="_blank" rel="noreferrer">${escapeHtml(mod.name)} v${escapeHtml(mod.version)}</a>
+                <span> - ${escapeHtml(mod.description)}</span>
+              </li>
+            `;
+        })
         .join("");
+}
+
+function resolveBuildMod(build, mod) {
+    if (typeof mod === "object" && mod) {
+        return mod;
+    }
+
+    const minecraftVersion = build.minecraftVersion || build.mcVersion;
+    return MODS[minecraftVersion]?.[mod] || null;
 }
 
 function initAnimatedDetails() {
@@ -750,6 +979,9 @@ function renderDownloads(build, files) {
     refs.oldVersions.innerHTML = older.length
         ? older.map((file) => renderVersionItem(build, file)).join("")
         : `<div class="version-item muted">Старых версий пока нет.</div>`;
+
+    renderGeneratedVersions(build, files, refs);
+    renderLucideIcons();
 }
 
 function renderVersionItem(build, file) {
@@ -782,6 +1014,187 @@ function renderArchiveTitle(file, build) {
       <span class="archive-kind ${kindClass}">${escapeHtml(file.kindLabel)}</span>
     </div>
   `;
+}
+
+function renderGeneratedVersions(build, files, refs) {
+    const packs = createGeneratedVersionPackages(build, files);
+
+    refs.generatedVersions.innerHTML = packs.length
+        ? packs.map((pack) => renderGeneratedVersionItem(pack)).join("")
+        : `<div class="version-item muted">Недостаточно архивов для автосборки.</div>`;
+}
+
+function createGeneratedVersionPackages(build, files) {
+    const latestRequiredVersion = files.find((file) => file.kind === "version" && file.required);
+    const latestVersion = files.find((file) => file.kind === "version");
+    const packs = [];
+
+    if (latestRequiredVersion) {
+        packs.push(createGeneratedVersionPackage(build, latestRequiredVersion, files, {
+            type: "incomplete",
+            label: "неполная",
+            includeOptionalAdditions: false
+        }));
+    }
+
+    if (latestVersion) {
+        packs.push(createGeneratedVersionPackage(build, latestVersion, files, {
+            type: "full",
+            label: "полная",
+            includeOptionalAdditions: true
+        }));
+    }
+
+    return packs.filter(Boolean);
+}
+
+function createGeneratedVersionPackage(build, baseVersion, files, options) {
+    const additions = files
+        .filter((file) => file.kind === "addition")
+        .filter((file) => options.includeOptionalAdditions || file.required)
+        .filter((file) => compareBuildVersions(file.buildVersion, baseVersion.buildVersion) >= 0)
+        .sort(compareArchivesOldestFirst);
+    const sources = [baseVersion, ...additions];
+    const id = `${build.id}-${options.type}-${baseVersion.buildVersion}`;
+    const fileName = `${build.assetName}-${baseVersion.mcVersion}-${baseVersion.buildVersion}+auto+${options.type}.zip`;
+    const pack = {
+        id,
+        build,
+        baseVersion,
+        fileName,
+        label: options.label,
+        sources,
+        size: sources.reduce((total, file) => total + (Number(file.size) || 0), 0),
+        createdAt: sources[0]?.createdAt
+    };
+
+    generatedVersionPackages.set(id, pack);
+    return pack;
+}
+
+function renderGeneratedVersionItem(pack) {
+    const displayName = cleanArchiveDisplayName(pack.fileName);
+    return `
+    <article class="version-item">
+      <div class="archive-title">
+        <span class="generated-archive-mark" aria-hidden="true"></span>
+        <strong>${escapeHtml(displayName)}</strong>
+        <span class="generated-kind generated-kind--${escapeAttr(pack.label === "полная" ? "full" : "incomplete")}">${escapeHtml(pack.label)}</span>
+      </div>
+      <div class="version-meta">
+        <span class="tag">${formatMoscowDateTime(pack.createdAt)}</span>
+        <span class="tag">${formatBytes(pack.size)}</span>
+        <span class="tag">${pack.sources.length} арх.</span>
+      </div>
+      <div class="download-actions">
+        <a class="download-link download-link--primary" href="#" data-generated-version-id="${escapeAttr(pack.id)}">/скачать</a>
+      </div>
+    </article>
+  `;
+}
+
+async function downloadGeneratedVersion(pack, link) {
+    const originalText = link.textContent;
+    link.textContent = "/собираю";
+    link.setAttribute("aria-busy", "true");
+
+    try {
+        const JSZip = await loadJsZip();
+        const outputZip = new JSZip();
+
+        for (const source of pack.sources) {
+            await appendArchiveToZip(outputZip, source, JSZip);
+        }
+
+        const blob = await outputZip.generateAsync({
+            type: "blob",
+            compression: "DEFLATE",
+            compressionOptions: {level: 6}
+        });
+        triggerBlobDownload(blob, pack.fileName);
+    } catch (error) {
+        console.warn(error);
+        window.alert("Не получилось собрать версию. Попробуй скачать архивы вручную.");
+    } finally {
+        link.textContent = originalText;
+        link.removeAttribute("aria-busy");
+    }
+}
+
+async function loadJsZip() {
+    jsZipImportPromise ||= import("https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm");
+    const module = await jsZipImportPromise;
+    return module.default;
+}
+
+async function appendArchiveToZip(outputZip, source, JSZip) {
+    const response = await fetch(source.url);
+    if (!response.ok) {
+        throw new Error(`Archive ${source.fileName} ${response.status}`);
+    }
+
+    const inputZip = await JSZip.loadAsync(await response.arrayBuffer());
+    const writes = [];
+    inputZip.forEach((path, entry) => {
+        if (entry.dir) {
+            outputZip.folder(path);
+            return;
+        }
+
+        writes.push(entry.async("uint8array").then((content) => {
+            outputZip.file(path, content, {date: entry.date});
+        }));
+    });
+
+    await Promise.all(writes);
+}
+
+function triggerBlobDownload(blob, fileName) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function compareArchivesOldestFirst(a, b) {
+    const version = compareBuildVersions(a.buildVersion, b.buildVersion);
+    if (version !== 0) {
+        return version;
+    }
+
+    return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+}
+
+function compareBuildVersions(a, b) {
+    const left = tokenizeBuildVersion(a);
+    const right = tokenizeBuildVersion(b);
+    const total = Math.max(left.length, right.length);
+
+    for (let index = 0; index < total; index += 1) {
+        const l = left[index] ?? 0;
+        const r = right[index] ?? 0;
+        if (l === r) {
+            continue;
+        }
+
+        if (typeof l === "number" && typeof r === "number") {
+            return l - r;
+        }
+
+        return String(l).localeCompare(String(r), "en", {numeric: true});
+    }
+
+    return 0;
+}
+
+function tokenizeBuildVersion(version) {
+    return String(version)
+        .split(/[._-]/)
+        .map((part) => (/^\d+$/.test(part) ? Number(part) : part.toLowerCase()));
 }
 
 function cleanArchiveDisplayName(fileName) {
@@ -844,8 +1257,9 @@ function renderEmptyReleaseState(build, message) {
     <div>
       <strong>${escapeHtml(message)}</strong>
     </div>
-  `;
+    `;
     refs.oldVersions.innerHTML = `<div class="version-item muted">Старых версий пока нет.</div>`;
+    refs.generatedVersions.innerHTML = `<div class="version-item muted">Автосборка пока недоступна.</div>`;
     refs.updates.innerHTML = `<div class="update-item muted">Обнов пока нет.</div>`;
 }
 

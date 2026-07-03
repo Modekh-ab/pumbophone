@@ -186,6 +186,22 @@
     box-shadow: inset 3px 0 0 rgba(132, 199, 232, 0.42);
 }
 
+.markdown-body .faq-legend {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0.75rem 0;
+    padding: 0;
+    list-style: none;
+}
+
+.markdown-body .faq-legend-item {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0;
+}
+
 .muted {
     color: var(--ink-dim);
 }
