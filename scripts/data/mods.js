@@ -13,6 +13,12 @@ export const MODS = {
             url: "https://www.curseforge.com/minecraft/mc-mods/ai-improvements",
             description: "оптимизирует работу ИИ мобов."
         },
+        apelsin: {
+            name: "Apelsin",
+            version: "0.1",
+            url: "https://www.youtube.com/watch?v=fMwIYVrt_fA",
+            description: "дополнения под сборку Апельсин: кастомное главное / загрузочное меню, совместимости GameStages с разными модами для прогрессии, ???."
+        },
         appleskin: {
             name: "AppleSkin",
             version: "1.0.14",

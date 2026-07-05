@@ -30,6 +30,7 @@ export const MOD_CATEGORY_ALIASES = {
 
 export const MOD_KEYS_BY_CATEGORY = {
     content: [
+        "apelsin",
         "actuallyadditions",
         "advancedrocketry",
         "aquaacrobatics",
@@ -109,6 +110,7 @@ export const MOD_KEYS_BY_CATEGORY = {
         "oreexcavation",
         "reachfix",
         "resourceloader",
+        "smoothfont",
         "soundreloader",
         "theoneprobe",
         "xaerominimap",

@@ -1,4 +1,5 @@
 !mixinbooter-10.7.jar
+apelsin-1.12.2-0.1.jar
 ActuallyAdditions-1.12.2-r152.jar
 ActuallyBaubles-1.12-1.1.jar
 advancedrocketry-2.2.11.jar
