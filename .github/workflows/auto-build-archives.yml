@@ -1,10 +1,9 @@
-name: Auto build archives
+name: archives-auto-build
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
   release:
-    types:
-      - published
+    types: [published]
 
 permissions:
   contents: write
