@@ -62,6 +62,18 @@ const els = {
 
 const buildRefs = new Map();
 const generatedVersionPackages = new Map();
+const BUILD_ROOT_NAMES = new Set([
+    "config",
+    "defaultconfigs",
+    "journeymap",
+    "kubejs",
+    "mods",
+    "resourcepacks",
+    "resources",
+    "saves",
+    "scripts",
+    "shaderpacks"
+]);
 const screenshotGroups = new Map();
 const buildModListPromises = new Map();
 const hotbarItemAnimations = [];
@@ -1652,10 +1664,17 @@ function latestArchiveDate(sources) {
 async function createMergedZipBlob(sources) {
     const entriesByPath = new Map();
 
-    for (const source of sources) {
+    let targetRootFolder = "";
+    for (const [sourceIndex, source] of sources.entries()) {
         const archive = parseZipArchive(await fetchArchiveBuffer(source), source);
+        if (sourceIndex === 0) {
+            targetRootFolder = findSingleRootFolder(archive.entries);
+        }
         for (const entry of archive.entries) {
-            entriesByPath.set(entry.path, entry);
+            const normalizedEntry = targetRootFolder
+                ? moveEntryToRootFolder(entry, targetRootFolder)
+                : entry;
+            entriesByPath.set(normalizedEntry.path, normalizedEntry);
         }
     }
 
@@ -1752,6 +1771,97 @@ function decodeZipPath(bytes, flags) {
     }
 
     return [...bytes].map((byte) => String.fromCharCode(byte)).join("");
+}
+
+function encodeZipPath(path) {
+    return new TextEncoder().encode(path);
+}
+
+function findSingleRootFolder(entries) {
+    const filePaths = entries
+        .map((entry) => normalizeZipPath(entry.path))
+        .filter((path) => path && !path.endsWith("/"));
+    if (!filePaths.length) {
+        return "";
+    }
+
+    let rootFolder = "";
+    for (const path of filePaths) {
+        const slashIndex = path.indexOf("/");
+        if (slashIndex <= 0) {
+            return "";
+        }
+
+        const folder = path.slice(0, slashIndex);
+        if (!rootFolder) {
+            rootFolder = folder;
+        } else if (folder !== rootFolder) {
+            return "";
+        }
+    }
+
+    return BUILD_ROOT_NAMES.has(rootFolder.toLowerCase()) ? "" : rootFolder;
+}
+
+function moveEntryToRootFolder(entry, targetRootFolder) {
+    const path = normalizeZipPath(entry.path);
+    if (!path || isPathInRootFolder(path, targetRootFolder)) {
+        return entry;
+    }
+
+    const targetPath = path
+        ? `${targetRootFolder}/${path}`
+        : `${targetRootFolder}/`;
+
+    return replaceZipEntryPath(entry, targetPath);
+}
+
+function normalizeZipPath(path) {
+    return String(path).replace(/\\/g, "/").replace(/^\/+/, "");
+}
+
+function isPathInRootFolder(path, rootFolder) {
+    return path === `${rootFolder}/` || path.startsWith(`${rootFolder}/`);
+}
+
+function replaceZipEntryPath(entry, path) {
+    const encodedPath = encodeZipPath(path);
+    const localHeader = entry.localSegment;
+    const localView = new DataView(localHeader.buffer, localHeader.byteOffset, localHeader.byteLength);
+    const localNameLength = localView.getUint16(26, true);
+    const localExtraLength = localView.getUint16(28, true);
+    const localRestOffset = 30 + localNameLength + localExtraLength;
+    const localSegment = new Uint8Array(30 + encodedPath.length + localExtraLength + (localHeader.length - localRestOffset));
+    const nextLocalView = new DataView(localSegment.buffer);
+
+    localSegment.set(localHeader.slice(0, 30), 0);
+    nextLocalView.setUint16(6, nextLocalView.getUint16(6, true) | 0x0800, true);
+    nextLocalView.setUint16(26, encodedPath.length, true);
+    localSegment.set(encodedPath, 30);
+    localSegment.set(localHeader.slice(30 + localNameLength, localRestOffset), 30 + encodedPath.length);
+    localSegment.set(localHeader.slice(localRestOffset), 30 + encodedPath.length + localExtraLength);
+
+    const centralRecord = entry.centralRecord;
+    const centralView = new DataView(centralRecord.buffer, centralRecord.byteOffset, centralRecord.byteLength);
+    const centralNameLength = centralView.getUint16(28, true);
+    const centralExtraLength = centralView.getUint16(30, true);
+    const centralCommentLength = centralView.getUint16(32, true);
+    const centralRestOffset = 46 + centralNameLength + centralExtraLength + centralCommentLength;
+    const nextCentralRecord = new Uint8Array(46 + encodedPath.length + centralExtraLength + centralCommentLength);
+    const nextCentralView = new DataView(nextCentralRecord.buffer);
+
+    nextCentralRecord.set(centralRecord.slice(0, 46), 0);
+    nextCentralView.setUint16(8, nextCentralView.getUint16(8, true) | 0x0800, true);
+    nextCentralView.setUint16(28, encodedPath.length, true);
+    nextCentralRecord.set(encodedPath, 46);
+    nextCentralRecord.set(centralRecord.slice(46 + centralNameLength, centralRestOffset), 46 + encodedPath.length);
+
+    return {
+        ...entry,
+        path,
+        localSegment,
+        centralRecord: nextCentralRecord
+    };
 }
 
 function buildZipBlob(entries) {
