@@ -538,7 +538,7 @@ export const MODS = {
         gamestagesviewer: {
             name: "Game Stages Viewer",
             version: "1.0",
-            url: "",
+            url: "https://www.curseforge.com/minecraft/mc-mods/game-stages-viewer",
             description: "показывает текущие этапы игрока."
         },
         getexpforeverything: {
@@ -610,50 +610,50 @@ export const MODS = {
         millenairejei: {
             name: "Millénaire JEI",
             version: "1.0.0-beta001",
-            url: "",
+            url: "https://www.curseforge.com/minecraft/mc-mods/millenaire-jei",
             description: "Millénaire + JEI."
         },
         millenaireextendedbyzantine: {
             name: "Millénaire Extended - Byzantine",
             version: "1.0.0",
-            url: "",
+            url: "https://www.curseforge.com/minecraft/mc-mods/millenaire-extended-byzantine",
             description: "добавляет византийскую культуру для Millénaire."
         },
         millenaireextendedindians: {
             name: "Millénaire Extended - Indians",
             version: "1.0.0",
-            url: "",
+            url: "https://www.curseforge.com/minecraft/mc-mods/millenaire-extended-indians",
             description: "добавляет индийскую культуру для Millénaire."
         },
         millenaireextendedinuits: {
             name: "Millénaire Extended - Inuits",
             version: "1.0.0",
-            url: "",
+            url: "https://www.curseforge.com/minecraft/mc-mods/millenaire-extended-inuits",
             description: "добавляет культуру инуитов для Millénaire."
         },
         millenaireextendedmaya: {
             name: "Millénaire Extended - Maya",
             version: "1.0.0",
-            url: "",
+            url: "https://www.curseforge.com/minecraft/mc-mods/millenaire-extended-maya",
             description: "добавляет культуру майя для Millénaire."
         },
         millenaireextendednormans: {
             name: "Millénaire Extended - Normans",
             version: "1.1.1",
-            url: "",
+            url: "https://www.curseforge.com/minecraft/mc-mods/millenaire-extended-normans",
             description: "расширяет норманнскую культуру в Millénaire."
         },
         modularpowersuits: {
             name: "Modular Powersuits",
             version: "1.1.048",
             url: "https://www.curseforge.com/minecraft/mc-mods/modular-powersuits",
-            description: "добавляет настраиваемую силовую броню с модулями."
+            description: "добавляет красивую настраиваемую броню с модулями."
         },
         netherportalfix: {
             name: "Nether Portal Fix",
             version: "5.3.17",
             url: "https://www.curseforge.com/minecraft/mc-mods/netherportalfix",
-            description: "исправляет привязку порталов между обычным миром и Адом."
+            description: "фиксит привязку порталов между Верхним миром и Адом."
         },
         numina: {
             name: "Numina",
@@ -662,10 +662,10 @@ export const MODS = {
             description: "для Modular Powersuits."
         },
         oeintegration: {
-            name: "OpenEye Integration",
+            name: "OreExcavation Integration",
             version: "2.3.4",
-            url: "https://www.curseforge.com/minecraft/mc-mods/openeyeintegration",
-            description: "служебный мод для совместимости OpenEye."
+            url: "https://www.curseforge.com/minecraft/mc-mods/oreexcavation-integration",
+            description: "TConstruct + Ore Excavation."
         },
         oreexcavation: {
             name: "Ore Excavation",
@@ -677,19 +677,19 @@ export const MODS = {
             name: "RandomPatches",
             version: "1.22.1.10",
             url: "https://www.curseforge.com/minecraft/mc-mods/randompatches-forge",
-            description: "набор небольших исправлений и настроек для Minecraft."
+            description: "набор небольших исправлений и настроек."
         },
         refinedstorage: {
             name: "Refined Storage",
             version: "1.6.16",
             url: "https://www.curseforge.com/minecraft/mc-mods/refined-storage",
-            description: "общая система хранения предметов и жидкостей с удобной автоматизацией."
+            description: "МЭ-подобная система хранения предметов."
         },
         resourceloader: {
             name: "Resource Loader",
             version: "1.5.3",
             url: "https://www.curseforge.com/minecraft/mc-mods/resource-loader",
-            description: "подключает свои текстуры, звуки и другие ресурсы для сборки."
+            description: "для GameStages Viewer; подключает свои текстуры, звуки и другие ресурсы для сборки."
         },
         roughtweaks: {
             name: "Rough Tweaks",
@@ -700,7 +700,7 @@ export const MODS = {
         rtgu: {
             name: "RTGU",
             version: "1.1.0",
-            url: "",
+            url: "https://www.curseforge.com/minecraft/mc-mods/realistic-terrain-generation-unofficial",
             description: "делает генерацию обычного мира более реалистичной."
         },
         scalinghealth: {
@@ -719,7 +719,7 @@ export const MODS = {
             name: "Silent Lib",
             version: "3.0.14",
             url: "https://www.curseforge.com/minecraft/mc-mods/silent-lib",
-            description: "библиотека для некоторых модов."
+            description: "для Scaling Health."
         },
         soundreloader: {
             name: "Sound Reloader",
