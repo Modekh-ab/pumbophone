@@ -3,7 +3,9 @@ name: archives-auto-build
 on:
   workflow_dispatch: {}
   release:
-    types: [published]
+    types:
+      - published
+      - edited
 
 permissions:
   contents: write
