@@ -5,7 +5,7 @@ export const MODS = {
             name: "MixinBooter",
             version: "10.7",
             url: "https://www.curseforge.com/minecraft/mc-mods/mixin-booter",
-            description: "нужен сразу нескольким модам, добавляет поддержку Mixin'ов для Forge 1.12.2."
+            description: "нужен нескольким модам, добавляет поддержку Mixin'ов для Forge 1.12.2."
         },
         aiimprovements: {
             name: "AI Improvements",
@@ -491,313 +491,307 @@ export const MODS = {
             name: "CraftTweaker",
             version: "4.1.20.715",
             url: "https://www.curseforge.com/minecraft/mc-mods/crafttweaker",
-            description: "позволяет изменять рецепты, события и баланс модов с помощью ZenScript."
+            description: "нужен для настройки рецептов и баланса сборки."
         },
         dimensionstages: {
             name: "Dimension Stages",
             version: "2.0.23",
             url: "https://www.curseforge.com/minecraft/mc-mods/dimension-stages",
-            description: "ограничивает доступ к измерениям в зависимости от игровых стадий."
+            description: "закрывает измерения до нужного этапа развития."
         },
         embers: {
             name: "Embers Rekindled",
             version: "0.230",
             url: "https://www.curseforge.com/minecraft/mc-mods/embers-rekindled",
-            description: "технологический мод в стиле стимпанк, основанный на энергии Ember."
+            description: "техномод в стиле стимпанка: машины, металлы, энергия и алхимия."
         },
         emberstic: {
             name: "Emberstic",
             version: "0.1.0",
             url: "https://www.curseforge.com/minecraft/mc-mods/emberstic",
-            description: "интегрирует Embers с Tinkers' Construct."
+            description: "Embers + Tinkers' Construct."
         },
         enchantinginfuserbackport: {
             name: "Enchanting Infuser Backport",
             version: "1.0.3",
             url: "https://www.curseforge.com/minecraft/mc-mods/enchanting-infuser-backport",
-            description: "переносит современный стол зачарований с выбором чар на Minecraft 1.12.2."
+            description: "добавляет улучшенный стол зачарований с выбором чар."
         },
         environmentaltech: {
             name: "Environmental Tech",
             version: "2.0.20.1",
             url: "https://www.curseforge.com/minecraft/mc-mods/environmental-tech",
-            description: "добавляет многоблочные установки для автоматической добычи ресурсов и генерации энергии."
+            description: "крупные установки для добычи ресурсов и генерации энергии."
         },
         foamfix: {
             name: "FoamFix",
             version: "0.10.15",
             url: "https://www.curseforge.com/minecraft/mc-mods/foamfix-for-minecraft",
-            description: "уменьшает использование оперативной памяти и ускоряет загрузку игры."
+            description: "оптимизирует память и ускоряет загрузку игры."
         },
         gamestages: {
             name: "Game Stages",
             version: "2.0.123",
             url: "https://www.curseforge.com/minecraft/mc-mods/game-stages",
-            description: "создаёт систему игровых стадий для постепенного открытия контента."
+            description: "открывает контент сборки постепенно, по этапам."
         },
         gamestagesviewer: {
             name: "Game Stages Viewer",
             version: "1.0",
             url: "",
-            description: "показывает активные игровые стадии игрока. Дополнение к Game Stages."
+            description: "показывает текущие этапы игрока."
         },
         getexpforeverything: {
             name: "Get Experience for Everything",
             version: "1.12.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/get-exp-for-everything",
-            description: "начисляет опыт за различные игровые действия, а не только за добычу и убийства."
+            description: "даёт опыт за разные действия, а не только за мобов и руды."
         },
         gnetum: {
             name: "Gnetum",
             version: "1.4.3",
             url: "https://www.curseforge.com/minecraft/mc-mods/gnetum",
-            description: "библиотека, используемая рядом модов автора GotoLink."
+            description: "библиотека для некоторых модов."
         },
         gottschcore: {
             name: "GottschCore",
             version: "1.15.1",
             url: "https://www.curseforge.com/minecraft/mc-mods/gottschcore",
-            description: "библиотека для модов автора Gottsch, включая Treasure2."
+            description: "для Treasure2!."
         },
         immersiveengineering: {
             name: "Immersive Engineering",
             version: "0.12-98",
             url: "https://www.curseforge.com/minecraft/mc-mods/immersive-engineering",
-            description: "крупный технологический мод в стиле индустриальной эпохи, добавляющий реалистичные механизмы, многоблочные конструкции и систему энергии."
+            description: "индустриальный техномод с проводами, генераторами, машинами и крупными механизмами."
         },
         industrialforegoing: {
             name: "Industrial Foregoing",
             version: "1.12.13-237",
             url: "https://www.curseforge.com/minecraft/mc-mods/industrial-foregoing",
-            description: "добавляет машины для автоматизации добычи ресурсов, фермерства, животноводства и производства энергии."
+            description: "автоматизация ферм, мобов, ресурсов и энергии."
         },
         ironbackpacks: {
             name: "Iron Backpacks",
             version: "3.0.8-12",
             url: "https://www.curseforge.com/minecraft/mc-mods/iron-backpacks",
-            description: "добавляет рюкзаки различных уровней с возможностью улучшения и фильтрации предметов."
+            description: "добавляет рюкзаки с улучшениями и фильтрами."
         },
         itemfilters: {
             name: "Item Filters",
             version: "1.0.4.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/item-filters",
-            description: "добавляет гибкие фильтры предметов для использования в различных технологических модах."
+            description: "добавляет фильтры предметов для разных модов."
         },
         libvulpes: {
             name: "LibVulpes",
             version: "0.5.5",
             url: "https://www.curseforge.com/minecraft/mc-mods/libvulpes",
-            description: "библиотека, необходимая для работы Advanced Rocketry."
+            description: "для Advanced Rocketry."
         },
         mantle: {
             name: "Mantle",
             version: "1.3.3.55",
             url: "https://www.curseforge.com/minecraft/mc-mods/mantle",
-            description: "библиотека SlimeKnights, необходимая для работы Tinkers' Construct и связанных модов."
+            description: "для Tinkers' Construct и связанных модов."
         },
         mcjtylib: {
             name: "McJtyLib",
             version: "3.5.4",
             url: "https://www.curseforge.com/minecraft/mc-mods/mcjtylib",
-            description: "библиотека McJty, используемая Refined Storage, XNet и другими модами."
+            description: "для XNet и Refined Storage."
         },
         millenaire: {
             name: "Millénaire",
             version: "8.1.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/millenaire",
-            description: "добавляет развивающиеся деревни с NPC, собственной экономикой, культурами, заданиями и системой отношений."
+            description: "добавляет живые деревни с жителями, торговлей, заданиями и развитием."
         },
         millenairejei: {
             name: "Millénaire JEI",
             version: "1.0.0-beta001",
             url: "",
-            description: "добавляет поддержку рецептов и предметов Millénaire в интерфейсе JEI."
+            description: "Millénaire + JEI."
         },
         millenaireextendedbyzantine: {
             name: "Millénaire Extended - Byzantine",
             version: "1.0.0",
             url: "",
-            description: "дополнение для Millénaire, добавляющее византийскую культуру."
+            description: "добавляет византийскую культуру для Millénaire."
         },
         millenaireextendedindians: {
             name: "Millénaire Extended - Indians",
             version: "1.0.0",
             url: "",
-            description: "дополнение для Millénaire, добавляющее индийскую культуру."
+            description: "добавляет индийскую культуру для Millénaire."
         },
         millenaireextendedinuits: {
             name: "Millénaire Extended - Inuits",
             version: "1.0.0",
             url: "",
-            description: "дополнение для Millénaire, добавляющее культуру инуитов."
+            description: "добавляет культуру инуитов для Millénaire."
         },
         millenaireextendedmaya: {
             name: "Millénaire Extended - Maya",
             version: "1.0.0",
             url: "",
-            description: "дополнение для Millénaire, добавляющее культуру майя."
+            description: "добавляет культуру майя для Millénaire."
         },
         millenaireextendednormans: {
             name: "Millénaire Extended - Normans",
             version: "1.1.1",
             url: "",
-            description: "дополнение для Millénaire, расширяющее контент норманнской культуры."
+            description: "расширяет норманнскую культуру в Millénaire."
         },
         modularpowersuits: {
             name: "Modular Powersuits",
             version: "1.1.048",
             url: "https://www.curseforge.com/minecraft/mc-mods/modular-powersuits",
-            description: "добавляет полностью настраиваемую высокотехнологичную броню с множеством модулей."
+            description: "добавляет настраиваемую силовую броню с модулями."
         },
         netherportalfix: {
             name: "Nether Portal Fix",
             version: "5.3.17",
             url: "https://www.curseforge.com/minecraft/mc-mods/netherportalfix",
-            description: "исправляет ошибки связывания порталов между измерениями."
+            description: "исправляет привязку порталов между обычным миром и Адом."
         },
         numina: {
             name: "Numina",
             version: "1.1.049",
             url: "https://www.curseforge.com/minecraft/mc-mods/numina",
-            description: "библиотека, необходимая для работы Modular Powersuits."
+            description: "для Modular Powersuits."
         },
         oeintegration: {
             name: "OpenEye Integration",
             version: "2.3.4",
             url: "https://www.curseforge.com/minecraft/mc-mods/openeyeintegration",
-            description: "обеспечивает совместимость различных модов и интеграцию с системой OpenEye."
+            description: "служебный мод для совместимости OpenEye."
         },
         oreexcavation: {
             name: "Ore Excavation",
             version: "1.4.150",
             url: "https://www.curseforge.com/minecraft/mc-mods/ore-excavation",
-            description: "позволяет добывать сразу целые жилы руды или деревья, удерживая назначенную клавишу."
+            description: "даёт быстро копать жилы руды и деревья по горячей клавише."
         },
         randompatches: {
             name: "RandomPatches",
             version: "1.22.1.10",
             url: "https://www.curseforge.com/minecraft/mc-mods/randompatches-forge",
-            description: "содержит множество исправлений ошибок, оптимизаций и дополнительных настроек Minecraft."
+            description: "набор небольших исправлений и настроек для Minecraft."
         },
         refinedstorage: {
             name: "Refined Storage",
             version: "1.6.16",
             url: "https://www.curseforge.com/minecraft/mc-mods/refined-storage",
-            description: "добавляет цифровую систему хранения предметов и жидкостей с высокой степенью автоматизации."
+            description: "общая система хранения предметов и жидкостей с удобной автоматизацией."
         },
         resourceloader: {
             name: "Resource Loader",
             version: "1.5.3",
             url: "https://www.curseforge.com/minecraft/mc-mods/resource-loader",
-            description: "позволяет подключать ресурспаки и дополнительные ресурсы без изменения jar-файлов модов."
+            description: "подключает свои текстуры, звуки и другие ресурсы для сборки."
         },
         roughtweaks: {
             name: "Rough Tweaks",
             version: "0.2.4",
             url: "https://www.curseforge.com/minecraft/mc-mods/rough-tweaks",
-            description: "усложняет раннее выживание, изменяя восстановление здоровья и систему лечения."
+            description: "усложняет лечение и раннее выживание."
         },
         rtgu: {
             name: "RTGU",
             version: "1.1.0",
             url: "",
-            description: "служебный мод; по названию jar невозможно достоверно определить официальный источник."
+            description: "делает генерацию обычного мира более реалистичной."
         },
         scalinghealth: {
             name: "Scaling Health",
             version: "1.3.42",
             url: "https://www.curseforge.com/minecraft/mc-mods/scaling-health",
-            description: "динамически увеличивает сложность игры и здоровье мобов по мере развития игроков."
+            description: "постепенно усиливает мобов по мере развития мира."
         },
         scannable: {
             name: "Scannable",
             version: "1.6.3.26",
             url: "https://www.curseforge.com/minecraft/mc-mods/scannable",
-            description: "добавляет портативный сканер, позволяющий искать руды, жидкости, существ и другие объекты."
+            description: "добавляет сканер для поиска руд, жидкостей, мобов и других целей."
         },
         silentlib: {
             name: "Silent Lib",
             version: "3.0.14",
             url: "https://www.curseforge.com/minecraft/mc-mods/silent-lib",
-            description: "универсальная библиотека для модов SilentChaos512."
+            description: "библиотека для некоторых модов."
         },
         soundreloader: {
             name: "Sound Reloader",
             version: "1.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/sound-reloader",
-            description: "позволяет быстро перезагружать звуки без полного перезапуска игры."
-        },
-        spark: {
-            name: "spark",
-            version: "",
-            url: "https://www.curseforge.com/minecraft/mc-mods/spark",
-            description: "профилировщик производительности для анализа нагрузки процессора, памяти и серверных тиков."
+            description: "перезагружает звуки на клавишу без перезапуска игры."
         },
         supermartijn642configlib: {
             name: "SuperMartijn642's Config Library",
             version: "1.1.8",
             url: "https://www.curseforge.com/minecraft/mc-mods/supermartijn642s-config-lib",
-            description: "библиотека для создания и загрузки конфигураций модов SuperMartijn642."
+            description: "для Chunk Loaders."
         },
         supermartijn642corelib: {
             name: "SuperMartijn642's Core Lib",
             version: "1.1.21",
             url: "https://www.curseforge.com/minecraft/mc-mods/supermartijn642s-core-lib",
-            description: "основная библиотека, необходимая для работы модов SuperMartijn642."
+            description: "для Chunk Loaders."
         },
         tconstruct: {
             name: "Tinkers' Construct",
             version: "2.13.0.183",
             url: "https://www.curseforge.com/minecraft/mc-mods/tinkers-construct",
-            description: "позволяет создавать и улучшать инструменты и оружие из различных материалов с помощью модульной системы."
+            description: "создание и улучшение инструментов и оружия из разных материалов."
         },
         teslacorelib: {
             name: "Tesla Core Lib",
             version: "1.0.18",
             url: "https://www.curseforge.com/minecraft/mc-mods/tesla-core-lib",
-            description: "библиотека, необходимая для работы Industrial Foregoing и ряда других технологических модов."
+            description: "для Industrial Foregoing."
         },
         theoneprobe: {
             name: "The One Probe",
             version: "1.4.28",
             url: "https://www.curseforge.com/minecraft/mc-mods/the-one-probe",
-            description: "отображает подробную информацию о блоках, механизмах и сущностях при наведении."
+            description: "показывает инфу о блоках, механизмах и мобах."
         },
         tinkertoolleveling: {
             name: "Tinkers' Tool Leveling",
             version: "1.1.0",
             url: "https://www.curseforge.com/minecraft/mc-mods/tinkers-tool-leveling",
-            description: "добавляет систему уровней и прокачки инструментов Tinkers' Construct."
+            description: "добавляет прокачку инструментов TConstruct."
         },
         tombstone: {
             name: "Corail Tombstone",
             version: "4.7.6",
             url: "https://www.curseforge.com/minecraft/mc-mods/corail-tombstone",
-            description: "после смерти создаёт могилу игрока, сохраняя его вещи и добавляя связанные механики."
+            description: "проработанный мод на могилки."
         },
         topaddons: {
             name: "TOP Addons",
             version: "1.13.0",
             url: "https://www.curseforge.com/minecraft/mc-mods/top-addons",
-            description: "расширяет The One Probe дополнительной информацией для множества популярных модов."
+            description: "добавляет больше инфы в The One Probe."
         },
         treasure2: {
             name: "Treasure2!",
             version: "2.3.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/treasure2",
-            description: "добавляет систему поиска сокровищ, карт, сундуков и редкой добычи."
+            description: "сокровища, карты, ключи, сундуки и редкая добыча."
         },
         valkyrielib: {
             name: "ValkyrieLib",
             version: "2.0.20.1",
             url: "https://www.curseforge.com/minecraft/mc-mods/valkyrielib",
-            description: "библиотека, необходимая для работы Environmental Tech."
+            description: "для Environmental Tech."
         },
         xnet: {
             name: "XNet",
             version: "1.8.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/xnet",
-            description: "добавляет мощную систему логических сетей для автоматизации предметов, жидкостей, энергии и сигналов Redstone."
+            description: "сети для автоматизации предметов, жидкостей, энергии и редстоуна."
         }
     },
     "1.16.5": {},
