@@ -385,11 +385,17 @@ export const MODS = {
             url: "https://www.curseforge.com/minecraft/mc-mods/reach-fix",
             description: "исправляет баги с дальностью взаимодействия с блоками и сущностями."
         },
+        smoothfont: {
+            name: "Smooth Font",
+            version: "2.1.4",
+            url: "https://www.curseforge.com/minecraft/mc-mods/smooth-font",
+            description: "кастомный шрифт."
+        },
         surge: {
             name: "Surge",
             version: "2.0.77",
             url: "https://www.curseforge.com/minecraft/mc-mods/surge",
-            description: "исправляет какие-то баги, не зн."
+            description: "оптимизация загрузки игры (+ выводит в логи время загрузки), фиксит пару мелких багов."
         },
         texfix: {
             name: "TexFix",
@@ -500,10 +506,10 @@ export const MODS = {
             description: "закрывает измерения до нужного этапа развития."
         },
         embers: {
-            name: "Embers Rekindled",
+            name: "Embers",
             version: "0.230",
-            url: "https://www.curseforge.com/minecraft/mc-mods/embers-rekindled",
-            description: "техномод в стиле стимпанка: машины, металлы, энергия и алхимия."
+            url: "https://www.curseforge.com/minecraft/mc-mods/embers",
+            description: "техномод в стиле стимпанка: машины, металлы, энергия, алхимия."
         },
         emberstic: {
             name: "Emberstic",
