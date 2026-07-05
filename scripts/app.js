@@ -1,4 +1,10 @@
-import { BUILDS, FAQS, MODS, SKINS } from "./data.js?v=split-24";
+// import { BUILDS, FAQS, MODS, SKINS } from "./mods.js?v=split-25";
+import { BUILDS } from "./data/builds.js";
+import { FAQS } from "./data/faqs.js";
+import { MODS } from "./data/mods.js";
+import { SKINS } from "./data/skins.js";
+
+
 import { collectBuildArchives, compareArchives, fetchReleasePayload } from "./releases.js?v=split-22";
 import { escapeAttr, escapeHtml, formatBytes, formatMoscowDateTime, renderMarkdown } from "./utils.js?v=split-22";
 import { initBuildPanoramas } from "./panorama.js?v=split-26";
@@ -10,6 +16,106 @@ const SKIN_NAME_COUNTS = SKINS.reduce((counts, skin) => {
     counts.set(base, (counts.get(base) || 0) + 1);
     return counts;
 }, new Map());
+
+const MOD_CATEGORIES = [
+    {id: "content", label: "Контент", command: "/контент", icon: "package-open"},
+    {id: "qol", label: "QoL", command: "/qol", icon: "sparkles"},
+    {id: "optimization", label: "Оптимизация", command: "/оптимизация", icon: "fire-extinguisher"},
+    {id: "compat", label: "Совместимости", command: "/совместимости", icon: "cable"},
+    {id: "libraries", label: "Библиотеки", command: "/библиотеки", icon: "blocks"}
+];
+
+const MOD_CATEGORY_IDS = new Set(MOD_CATEGORIES.map((category) => category.id));
+const MOD_CATEGORY_ALIASES = {
+    content: "content",
+    "контент": "content",
+    qol: "qol",
+    "куол": "qol",
+    optimization: "optimization",
+    optimize: "optimization",
+    "оптимизация": "optimization",
+    libraries: "libraries",
+    library: "libraries",
+    libs: "libraries",
+    "библиотеки": "libraries",
+    "библиотека": "libraries"
+};
+const MOD_KEYS_BY_CATEGORY = {
+    content: [],
+    qol: [
+        "appleskin",
+        "carryon",
+        "controlling",
+        "corpse",
+        "enchantmentdescriptions",
+        "fallingtree",
+        "harvest",
+        "hwyla",
+        "inventoryhud",
+        "inventorytweaks",
+        "itemborders",
+        "itemphysiclite",
+        "jade",
+        "jeiintegration",
+        "jei",
+        "journeymap",
+        "jeb",
+        "jer",
+        "legendarytooltips",
+        "mousetweaks",
+        "naturescompass",
+        "norecipebook",
+        "onlinepicframe",
+        "reachfix",
+        "xaerominimap",
+        "xaeroworldmap"
+    ],
+    compat: [
+        "emberstic"
+    ],
+    optimization: [
+        "aiimprovements",
+        "clumps",
+        "farsight",
+        "fastfurnace",
+        "fastworkbench",
+        "fpsreducer",
+        "optifine",
+        "surge",
+        "texfix",
+        "vintagefix"
+    ],
+    libraries: [
+        "artemislib",
+        "baubles",
+        "bookshelf",
+        "codechickenlib",
+        "creativecore",
+        "endercore",
+        "forgelin",
+        "geckolib",
+        "hammerlib",
+        "ichunutil",
+        "ivtoolkit",
+        "konkrete",
+        "libraryex",
+        "llibrary",
+        "lunatriuscore",
+        "mixinbooter",
+        "openmodslib",
+        "patchouli",
+        "placebo",
+        "timecore",
+        "xaerolib"
+    ]
+};
+
+const MOD_CATEGORY_BY_KEY = Object.entries(MOD_KEYS_BY_CATEGORY).reduce((lookup, [category, keys]) => {
+    for (const key of keys) {
+        lookup[key] = category;
+    }
+    return lookup;
+}, {});
 
 const state = {
 
@@ -46,10 +152,12 @@ const els = {
 
 const buildRefs = new Map();
 const generatedVersionPackages = new Map();
+const screenshotGroups = new Map();
 const hotbarItemAnimations = [];
 let setActivePlayerSkin = null;
 let jsZipImportPromise = null;
 let hotbarAnimationFrame = null;
+let screenshotViewer = null;
 
 function init() {
   initAnimatedFavicon();
@@ -65,6 +173,7 @@ function init() {
     bindBuildSwipe();
     bindUpdateLinks();
     bindGeneratedVersionDownloads();
+    bindScreenshotGallery();
     setInventoryEnabled(true);
     selectBuild(BUILDS[0]?.id, {scroll: false});
     initAnimatedDetails();
@@ -284,20 +393,23 @@ function renderInventoryOverlays() {
 
 function renderBuilds() {
     els.buildsRegion.innerHTML = BUILDS.map(renderBuild).join("");
+    screenshotGroups.clear();
 
     for (const build of BUILDS) {
         const root = document.querySelector(`#build-${build.id}`);
         buildRefs.set(build.id, {
             root,
-            image: root.querySelector("[data-hero-image]"),
+        image: root.querySelector("[data-hero-image]"),
             version: root.querySelector("[data-version-info]"),
             mods: root.querySelector("[data-mods-list]"),
             latest: root.querySelector("[data-latest-download]"),
             oldVersions: root.querySelector("[data-old-versions]"),
             generatedVersions: root.querySelector("[data-generated-versions]"),
+            screenshots: root.querySelector("[data-screenshots-grid]"),
             updates: root.querySelector("[data-updates-list]")
         });
         renderMods(build, buildRefs.get(build.id));
+        renderScreenshots(build, buildRefs.get(build.id));
     }
 
     document.querySelectorAll("[data-peek-build]").forEach((button) => {
@@ -381,7 +493,7 @@ function renderBuild(build) {
               <details class="mini-panel">
                 <summary>/моды</summary>
                 <div class="details-content">
-                  <ul class="mod-list" data-mods-list></ul>
+                  <div class="mod-versions" data-mods-list></div>
                 </div>
               </details>
             </div>
@@ -409,7 +521,7 @@ function renderBuild(build) {
             </details>
 
             <details class="mini-panel versions-panel">
-              <summary>/версии</summary>
+              <summary>/авто_версии</summary>
               <div class="details-content">
                 <div class="generated-warning">
                   <i data-lucide="triangle-alert" aria-hidden="true"></i>
@@ -428,6 +540,16 @@ function renderBuild(build) {
           </summary>
           <div class="details-content">
             <div class="updates-stack" data-updates-list></div>
+          </div>
+        </details>
+
+        <details class="command-panel command-panel--screenshots">
+          <summary>
+            <i class="summary-icon summary-icon--screenshots" data-lucide="images" aria-hidden="true"></i>
+            <span>/скрины</span>
+          </summary>
+          <div class="details-content">
+            <div class="screenshots-grid" data-screenshots-grid></div>
           </div>
         </details>
       </section>
@@ -657,6 +779,37 @@ function bindGeneratedVersionDownloads() {
     });
 }
 
+function bindScreenshotGallery() {
+    els.buildsRegion?.addEventListener("click", (event) => {
+        const stepButton = event.target.closest("[data-screenshot-preview-step]");
+        if (stepButton) {
+            event.preventDefault();
+            stepScreenshotCardPreview(stepButton);
+            return;
+        }
+
+        const openButton = event.target.closest("[data-screenshot-open]");
+        if (openButton) {
+            event.preventDefault();
+            openScreenshotViewer(openButton.dataset.screenshotOpen, Number(openButton.dataset.screenshotIndex) || 0);
+        }
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (!screenshotViewer?.root?.classList.contains("is-open")) {
+            return;
+        }
+
+        if (event.key === "Escape") {
+            closeScreenshotViewer();
+        } else if (event.key === "ArrowLeft") {
+            moveScreenshotViewer(-1);
+        } else if (event.key === "ArrowRight") {
+            moveScreenshotViewer(1);
+        }
+    });
+}
+
 function setInventoryEnabled(enabled) {
     state.inventoryEnabled = enabled;
     els.body.classList.toggle("inventory-enabled", enabled);
@@ -826,7 +979,7 @@ function animateSkinSlide() {
 
 function renderMods(build, refs) {
     if (!build.mods.length) {
-        refs.mods.innerHTML = `<li class="muted">Список модов пока не указан.</li>`;
+        refs.mods.innerHTML = `<div class="mod-empty muted">Список модов пока не указан.</div>`;
         return;
     }
 
@@ -835,29 +988,389 @@ function renderMods(build, refs) {
         .filter(Boolean);
 
     if (!mods.length) {
-        refs.mods.innerHTML = `<li class="muted">Список модов пока не указан.</li>`;
+        refs.mods.innerHTML = `<div class="mod-empty muted">Список модов пока не указан.</div>`;
         return;
     }
 
-    refs.mods.innerHTML = mods
-        .map((mod) => {
-            return `
-              <li>
-                <a class="mod-link" href="${escapeAttr(mod.url)}" target="_blank" rel="noreferrer">${escapeHtml(mod.name)} v${escapeHtml(mod.version)}</a>
-                <span> - ${escapeHtml(mod.description)}</span>
-              </li>
-            `;
-        })
-        .join("");
+    refs.mods.innerHTML = renderModVersionGroups(mods);
 }
 
 function resolveBuildMod(build, mod) {
+    const minecraftVersion = mod?.minecraftVersion || mod?.mcVersion || build.minecraftVersion || build.mcVersion;
+
     if (typeof mod === "object" && mod) {
-        return mod;
+        const key = mod.id || mod.key || "";
+        return normalizeBuildMod(mod, key, minecraftVersion);
     }
 
-    const minecraftVersion = build.minecraftVersion || build.mcVersion;
-    return MODS[minecraftVersion]?.[mod] || null;
+    const data = MODS[minecraftVersion]?.[mod];
+    return data ? normalizeBuildMod(data, mod, minecraftVersion) : null;
+}
+
+function normalizeBuildMod(mod, key, minecraftVersion) {
+    return {
+        ...mod,
+        key,
+        minecraftVersion,
+        category: normalizeModCategory(mod.category || inferModCategory(key, mod))
+    };
+}
+
+function normalizeModCategory(category) {
+    const normalized = String(category || "").toLowerCase();
+    return MOD_CATEGORY_ALIASES[normalized] || (MOD_CATEGORY_IDS.has(normalized) ? normalized : "content");
+}
+
+function inferModCategory(key, mod) {
+    const normalizedKey = String(key || "").toLowerCase();
+    if (MOD_CATEGORY_BY_KEY[normalizedKey]) {
+        return MOD_CATEGORY_BY_KEY[normalizedKey];
+    }
+
+    const haystack = `${mod.name || ""} ${mod.description || ""}`.toLowerCase();
+    if (/(lib|library|core|api|mixin|forgelin|baubles|bookshelf)/i.test(haystack)) {
+        return "libraries";
+    }
+    if (/(optimiz|performance|fps|lag|memory|furnace|workbench|texfix|fix)/i.test(haystack)) {
+        return "optimization";
+    }
+    if (/(hud|map|inventory|tooltip|recipe|jei|controls|compass|tweak|sort)/i.test(haystack)) {
+        return "qol";
+    }
+
+    return "content";
+}
+
+function renderModVersionGroups(mods) {
+    return MOD_CATEGORIES
+        .map((category) => renderModCategoryPanel(category, mods.filter((mod) => mod.category === category.id)))
+        .join("");
+}
+
+function renderModCategoryPanel(category, mods) {
+    const items = mods.length
+        ? mods.map(renderModItem).join("")
+        : `<li class="mod-empty muted">Пока пусто.</li>`;
+
+    return `
+      <details class="mini-panel mod-category-panel" ${mods.length ? "open" : ""}>
+        <summary>
+          <i class="mod-category-icon" data-lucide="${escapeAttr(category.icon)}" aria-hidden="true"></i>
+          <span>${escapeHtml(category.command)}</span>
+          <span class="mod-count">${mods.length}</span>
+        </summary>
+        <div class="details-content">
+          <ul class="mod-list">
+            ${items}
+          </ul>
+        </div>
+      </details>
+    `;
+}
+
+function renderModItem(mod) {
+    return `
+      <li>
+        <a class="mod-link" href="${escapeAttr(mod.url)}" target="_blank" rel="noreferrer">${escapeHtml(mod.name)} v${escapeHtml(mod.version)}</a>
+        <span> - ${escapeHtml(mod.description)}</span>
+      </li>
+    `;
+}
+
+function renderScreenshots(build, refs) {
+    const groups = normalizeScreenshotGroups(build);
+    if (!groups.length) {
+        refs.screenshots.innerHTML = `<div class="screenshot-empty muted">Скринов пока нет.</div>`;
+        return;
+    }
+
+    refs.screenshots.innerHTML = groups.map((group) => renderScreenshotCard(group)).join("");
+}
+
+function normalizeScreenshotGroups(build) {
+    return (build.screenshots || [])
+        .map((entry, groupIndex) => {
+            const rawItems = Array.isArray(entry?.items) ? entry.items : [entry];
+            const items = rawItems
+                .map((item, itemIndex) => normalizeScreenshotItem(item, entry, itemIndex))
+                .filter(Boolean);
+
+            if (!items.length) {
+                return null;
+            }
+
+            const group = {
+                id: `${build.id}-screenshots-${groupIndex}`,
+                caption: typeof entry?.caption === "string" ? entry.caption : "",
+                date: entry?.date || formatScreenshotDate(items[0].src),
+                items
+            };
+            screenshotGroups.set(group.id, group);
+            return group;
+        })
+        .filter(Boolean);
+}
+
+function normalizeScreenshotItem(item, groupEntry, itemIndex) {
+    if (typeof item === "string") {
+        return {
+            src: item,
+            caption: "",
+            date: formatScreenshotDate(item)
+        };
+    }
+
+    if (!item?.src) {
+        return null;
+    }
+
+    return {
+        src: item.src,
+        caption: typeof item.caption === "string" ? item.caption : "",
+        date: item.date || formatScreenshotDate(item.src),
+        alt: item.alt || item.caption || groupEntry?.caption || `Скрин ${itemIndex + 1}`
+    };
+}
+
+function renderScreenshotCard(group) {
+    const first = group.items[0];
+    const cardCaption = group.caption || first.caption || "";
+    const cardDate = group.date || first.date || "";
+    const date = cardDate ? `<span class="screenshot-date" data-screenshot-card-date>${escapeHtml(cardDate)}</span>` : "";
+    const caption = `<p data-screenshot-card-caption ${cardCaption ? "" : "hidden"}>${escapeHtml(cardCaption)}</p>`;
+    const multi = group.items.length > 1;
+    const controls = multi
+        ? `
+          <div class="screenshot-card-controls">
+            <button type="button" data-screenshot-preview-step="-1" data-screenshot-group="${escapeAttr(group.id)}" aria-label="Предыдущий скрин">‹</button>
+            <span data-screenshot-counter>1/${group.items.length}</span>
+            <button type="button" data-screenshot-preview-step="1" data-screenshot-group="${escapeAttr(group.id)}" aria-label="Следующий скрин">›</button>
+          </div>
+        `
+        : "";
+    const stack = multi ? `<span class="screenshot-stack-count">${group.items.length}</span>` : "";
+
+    return `
+      <article class="screenshot-card ${multi ? "screenshot-card--group" : ""}" data-screenshot-card="${escapeAttr(group.id)}" data-screenshot-current="0">
+        <button class="screenshot-open" type="button" data-screenshot-open="${escapeAttr(group.id)}" data-screenshot-index="0">
+          <img src="${escapeAttr(first.src)}" alt="${escapeAttr(first.alt || group.caption || "Скрин сборки")}" loading="lazy" data-screenshot-preview />
+          ${stack}
+        </button>
+        <div class="screenshot-meta">
+          ${date}
+          ${caption}
+          ${controls}
+        </div>
+      </article>
+    `;
+}
+
+function stepScreenshotCardPreview(button) {
+    const group = screenshotGroups.get(button.dataset.screenshotGroup);
+    const card = button.closest("[data-screenshot-card]");
+    if (!group || !card) {
+        return;
+    }
+
+    const step = Number(button.dataset.screenshotPreviewStep) || 0;
+    const nextIndex = (Number(card.dataset.screenshotCurrent) + step + group.items.length) % group.items.length;
+    const item = group.items[nextIndex];
+    const preview = card.querySelector("[data-screenshot-preview]");
+    const caption = group.caption || item.caption || "";
+    const date = group.date || item.date || "";
+    card.dataset.screenshotCurrent = String(nextIndex);
+    preview?.classList.add("is-switching");
+    window.setTimeout(() => {
+        preview?.setAttribute("src", item.src);
+        preview?.setAttribute("alt", item.alt || caption || "Скрин сборки");
+        preview?.classList.remove("is-switching");
+    }, 120);
+    card.querySelector("[data-screenshot-open]")?.setAttribute("data-screenshot-index", String(nextIndex));
+    card.querySelector("[data-screenshot-counter]")?.replaceChildren(`${nextIndex + 1}/${group.items.length}`);
+    const captionNode = card.querySelector("[data-screenshot-card-caption]");
+    if (captionNode) {
+        captionNode.textContent = caption;
+        captionNode.hidden = !caption;
+    }
+    const dateNode = card.querySelector("[data-screenshot-card-date]");
+    if (dateNode) {
+        dateNode.textContent = date;
+        dateNode.hidden = !date;
+    }
+}
+
+function formatScreenshotDate(src) {
+    const fileName = String(src || "").split(/[\\/]/).pop()?.replace(/\.[^.]+$/, "") || "";
+    const match = fileName.match(/^(\d{4})-(\d{2})-(\d{2})_(\d{2})\.(\d{2})\.(\d{2})$/);
+    if (!match) {
+        return "";
+    }
+
+    return `${Number(match[3])}.${match[2]}.${match[1]}, ${match[4]}:${match[5]} мск`;
+}
+
+function ensureScreenshotViewer() {
+    if (screenshotViewer) {
+        return screenshotViewer;
+    }
+
+    const root = document.createElement("div");
+    root.className = "screenshot-viewer";
+    root.setAttribute("aria-hidden", "true");
+    root.innerHTML = `
+      <div class="screenshot-viewer-backdrop" data-screenshot-close></div>
+      <div class="screenshot-viewer-dialog" role="dialog" aria-modal="true" aria-label="Просмотр скрина">
+        <div class="screenshot-viewer-toolbar">
+          <button type="button" data-screenshot-move="-1" aria-label="Предыдущий скрин">‹</button>
+          <button type="button" data-screenshot-zoom="-1" aria-label="Отдалить">−</button>
+          <button type="button" data-screenshot-zoom-reset aria-label="Сбросить масштаб">1x</button>
+          <button type="button" data-screenshot-zoom="1" aria-label="Приблизить">+</button>
+          <a data-screenshot-download href="#" download>/скачать</a>
+          <button type="button" data-screenshot-move="1" aria-label="Следующий скрин">›</button>
+          <button type="button" data-screenshot-close aria-label="Закрыть">×</button>
+        </div>
+        <div class="screenshot-viewer-stage">
+          <img alt="" data-screenshot-viewer-image />
+        </div>
+        <div class="screenshot-viewer-meta">
+          <span data-screenshot-viewer-date></span>
+          <p data-screenshot-viewer-caption></p>
+        </div>
+      </div>
+    `;
+    document.body.append(root);
+
+    screenshotViewer = {
+        root,
+        image: root.querySelector("[data-screenshot-viewer-image]"),
+        date: root.querySelector("[data-screenshot-viewer-date]"),
+        caption: root.querySelector("[data-screenshot-viewer-caption]"),
+        download: root.querySelector("[data-screenshot-download]"),
+        group: null,
+        items: [],
+        index: 0,
+        zoom: 1,
+        zoomOut: root.querySelector("[data-screenshot-zoom='-1']"),
+        zoomLabel: root.querySelector("[data-screenshot-zoom-reset]")
+    };
+
+    root.addEventListener("click", (event) => {
+        const close = event.target.closest("[data-screenshot-close]");
+        const move = event.target.closest("[data-screenshot-move]");
+        const zoom = event.target.closest("[data-screenshot-zoom]");
+        const reset = event.target.closest("[data-screenshot-zoom-reset]");
+
+        if (close) {
+            closeScreenshotViewer();
+        } else if (move) {
+            moveScreenshotViewer(Number(move.dataset.screenshotMove) || 0);
+        } else if (zoom) {
+            zoomScreenshotViewer(Number(zoom.dataset.screenshotZoom) || 0);
+        } else if (reset) {
+            setScreenshotViewerZoom(1);
+        }
+    });
+
+    return screenshotViewer;
+}
+
+function openScreenshotViewer(groupId, index) {
+    const group = screenshotGroups.get(groupId);
+    if (!group) {
+        return;
+    }
+
+    const viewer = ensureScreenshotViewer();
+    viewer.group = group;
+    viewer.items = collectScreenshotViewerItems(group);
+    viewer.index = viewer.items.findIndex((item) => item.groupId === group.id && item.groupIndex === index);
+    if (viewer.index < 0) {
+        viewer.index = 0;
+    }
+    viewer.root.classList.add("is-open");
+    viewer.root.setAttribute("aria-hidden", "false");
+    document.body.classList.add("is-screenshot-viewer-open");
+    setScreenshotViewerZoom(1);
+    renderScreenshotViewer();
+}
+
+function closeScreenshotViewer() {
+    if (!screenshotViewer) {
+        return;
+    }
+
+    screenshotViewer.root.classList.remove("is-open");
+    screenshotViewer.root.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("is-screenshot-viewer-open");
+}
+
+function moveScreenshotViewer(step) {
+    if (!screenshotViewer?.items || screenshotViewer.items.length < 2) {
+        return;
+    }
+
+    screenshotViewer.index = (screenshotViewer.index + step + screenshotViewer.items.length) % screenshotViewer.items.length;
+    setScreenshotViewerZoom(1);
+    renderScreenshotViewer();
+}
+
+function zoomScreenshotViewer(step) {
+    if (!screenshotViewer) {
+        return;
+    }
+
+    setScreenshotViewerZoom(Math.min(4, Math.max(0.25, screenshotViewer.zoom + step * 0.25)));
+}
+
+function setScreenshotViewerZoom(value) {
+    if (!screenshotViewer) {
+        return;
+    }
+
+    screenshotViewer.zoom = Math.min(4, Math.max(0.25, value));
+    screenshotViewer.image.style.transform = `scale(${screenshotViewer.zoom})`;
+    screenshotViewer.zoomLabel?.replaceChildren(`${formatZoomLabel(screenshotViewer.zoom)}`);
+    if (screenshotViewer.zoomOut) {
+        screenshotViewer.zoomOut.disabled = screenshotViewer.zoom <= 0.25;
+    }
+}
+
+function renderScreenshotViewer() {
+    const viewer = screenshotViewer;
+    const item = viewer.items[viewer.index];
+    const caption = item.caption || item.groupCaption || "";
+    const date = item.date || item.groupDate || "";
+
+    viewer.image.classList.add("is-switching");
+    window.setTimeout(() => {
+        viewer.image.src = item.src;
+        viewer.image.alt = item.alt || caption || "Скрин сборки";
+        viewer.date.textContent = date;
+        viewer.caption.textContent = caption;
+        viewer.caption.hidden = !caption;
+        viewer.date.hidden = !date;
+        viewer.download.href = item.src;
+        viewer.download.download = item.src.split(/[\\/]/).pop() || "screenshot.png";
+        viewer.image.classList.remove("is-switching");
+    }, 120);
+}
+
+function collectScreenshotViewerItems(activeGroup) {
+    const activeBuildId = activeGroup.id.split("-screenshots-")[0];
+    const groups = Array.from(screenshotGroups.values()).filter((group) => group.id.startsWith(`${activeBuildId}-screenshots-`));
+    return groups.flatMap((group) => {
+        return group.items.map((item, groupIndex) => ({
+            ...item,
+            groupId: group.id,
+            groupIndex,
+            groupCaption: group.caption,
+            groupDate: group.date
+        }));
+    });
+}
+
+function formatZoomLabel(value) {
+    return Number.isInteger(value) ? `${value}x` : `${value.toFixed(1)}x`;
 }
 
 function initAnimatedDetails() {

@@ -123,7 +123,8 @@
         grid-template-columns: 1fr;
     }
 
-    .command-panel:nth-child(3) {
+    .command-panel--updates,
+    .command-panel--screenshots {
         grid-column: auto;
     }
 
