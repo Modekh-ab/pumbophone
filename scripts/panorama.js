@@ -57,6 +57,7 @@ class PanoramaStage {
         this.speed = PANORAMA_SPEEDS[this.speedIndex];
         this.panoramaTime = 0;
         this.lastTickTime = 0;
+        this.activePointerId = null;
         this.controls = {
             speed: this.interactionRoot.querySelector("[data-panorama-speed]"),
             prev: this.interactionRoot.querySelector("[data-panorama-prev]"),
@@ -126,11 +127,19 @@ class PanoramaStage {
             if (event.target.closest(".panorama-controls")) {
                 return;
             }
+            if (event.isPrimary === false) {
+                return;
+            }
             if (this.isPaused) {
                 return;
             }
 
-            this.interactionRoot.setPointerCapture?.(event.pointerId);
+            this.activePointerId = event.pointerId;
+            try {
+                this.interactionRoot.setPointerCapture?.(event.pointerId);
+            } catch (error) {
+                console.warn(error);
+            }
             this.isPaused = true;
             this.interactionRoot.classList.add("is-panorama-pressed");
         });
@@ -139,16 +148,42 @@ class PanoramaStage {
             if (!this.isPaused) {
                 return;
             }
-            this.isPaused = false;
-            if (this.interactionRoot.hasPointerCapture?.(event.pointerId)) {
-                this.interactionRoot.releasePointerCapture(event.pointerId);
+            if (event?.pointerId !== undefined && this.activePointerId !== null && event.pointerId !== this.activePointerId) {
+                return;
             }
-            this.interactionRoot.classList.remove("is-panorama-pressed");
+            this.resumeInteraction();
         };
 
         this.interactionRoot.addEventListener("pointerup", resume);
         this.interactionRoot.addEventListener("pointercancel", resume);
         this.interactionRoot.addEventListener("lostpointercapture", resume);
+        window.addEventListener("pointerup", resume, true);
+        window.addEventListener("pointercancel", resume, true);
+        window.addEventListener("blur", () => this.resumeInteraction());
+        window.addEventListener("scroll", () => this.resumeInteraction(), {passive: true, capture: true});
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                this.resumeInteraction();
+            }
+        });
+    }
+
+    resumeInteraction() {
+        if (!this.isPaused) {
+            return;
+        }
+
+        const pointerId = this.activePointerId;
+        this.activePointerId = null;
+        this.isPaused = false;
+        if (pointerId !== null && this.interactionRoot.hasPointerCapture?.(pointerId)) {
+            try {
+                this.interactionRoot.releasePointerCapture(pointerId);
+            } catch (error) {
+                console.warn(error);
+            }
+        }
+        this.interactionRoot.classList.remove("is-panorama-pressed");
     }
 
     async show(path, immediate) {

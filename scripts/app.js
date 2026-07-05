@@ -8,7 +8,7 @@ import { MOD_FILE_ALIASES, MOD_CATEGORIES, MOD_CATEGORY_ALIASES, MOD_KEYS_BY_CAT
 
 import { collectBuildArchives, collectGeneratedArchives, compareArchives, fetchReleasePayload } from "./releases.js?v=split-23";
 import { escapeAttr, escapeHtml, formatBytes, formatMoscowDateTime, renderMarkdown } from "./utils.js?v=split-22";
-import { initBuildPanoramas } from "./panorama.js?v=split-26";
+import { initBuildPanoramas } from "./panorama.js?v=split-27";
 import { startHead, startPlayer } from "./webgl.js?v=split-22";
 
 const ITEM_TICK_MS = 50;
@@ -1593,7 +1593,7 @@ function createGeneratedVersionPackage(build, baseVersion, files, generatedFiles
         label: options.label,
         sources,
         prebuilt,
-        size: sources.reduce((total, file) => total + (Number(file.size) || 0), 0),
+        size: Number(prebuilt?.size) || sources.reduce((total, file) => total + (Number(file.size) || 0), 0),
         createdAt: latestArchiveDate(sources)
     };
 
