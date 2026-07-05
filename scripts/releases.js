@@ -49,6 +49,16 @@ function detectRepository() {
 }
 
 export function collectBuildArchives(releases, build) {
+    return collectMatchingArchives(releases, build)
+        .filter((archive) => !archive.generatedType);
+}
+
+export function collectGeneratedArchives(releases, build) {
+    return collectMatchingArchives(releases, build)
+        .filter((archive) => archive.generatedType);
+}
+
+function collectMatchingArchives(releases, build) {
     return releases.flatMap((release) => {
         return (release.assets || [])
             .map((asset) => parseArchive(asset, release))
@@ -75,9 +85,11 @@ function parseArchive(asset, release) {
         kindLabel: flags.kindLabel,
         required: flags.required,
         requiredLabel: flags.requiredLabel,
+        generatedType: flags.generatedType,
         size: asset.size,
         downloads: asset.download_count,
         url: asset.browser_download_url,
+        apiUrl: asset.url || "",
         createdAt: asset.created_at || release.published_at,
         releaseName: release.name || release.tag_name || match[3],
         releaseBody: release.body || "",
@@ -94,12 +106,14 @@ function cleanArchiveDisplayName(fileName) {
 function applyArchiveFlagOverrides(flags, asset) {
     const kind = asset.kind === "addition" || asset.kind === "version" ? asset.kind : flags.kind;
     const required = typeof asset.required === "boolean" ? asset.required : flags.required;
+    const generatedType = asset.generatedType || flags.generatedType;
 
     return {
         kind,
         kindLabel: kind === "addition" ? "дополнение" : "версия",
         required,
-        requiredLabel: required ? "обязательно" : "необязательно"
+        requiredLabel: required ? "обязательно" : "необязательно",
+        generatedType
     };
 }
 
@@ -122,6 +136,9 @@ function parseArchiveFlags(value = "") {
     const hasOptional =
         hasAny(tokens, ["optional", "opt", "notrequired", "neobyazatelno"]) ||
         hasAny(tokens, ["необязательно", "опционально"]);
+    const generatedType = hasAny(tokens, ["auto", "generated"])
+        ? hasAny(tokens, ["incomplete", "lite", "requiredonly"]) ? "incomplete" : "full"
+        : "";
 
     const kind = isAddition && !isVersion ? "addition" : "version";
     const required = hasOptional ? false : hasRequired ? true : kind === "version";
@@ -130,7 +147,8 @@ function parseArchiveFlags(value = "") {
         kind,
         kindLabel: kind === "addition" ? "дополнение" : "версия",
         required,
-        requiredLabel: required ? "обязательно" : "необязательно"
+        requiredLabel: required ? "обязательно" : "необязательно",
+        generatedType
     };
 }
 
@@ -180,7 +198,3 @@ function tokenizeVersion(version) {
         .split(/[._-]/)
         .map((part) => (/^\d+$/.test(part) ? Number(part) : part.toLowerCase()));
 }
-
-
-
-

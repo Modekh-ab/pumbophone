@@ -6,7 +6,7 @@ import { SKINS } from "./data/skins.js";
 import { MOD_FILE_ALIASES, MOD_CATEGORIES, MOD_CATEGORY_ALIASES, MOD_KEYS_BY_CATEGORY }
     from "./data/mods_keys.js";
 
-import { collectBuildArchives, compareArchives, fetchReleasePayload } from "./releases.js?v=split-22";
+import { collectBuildArchives, collectGeneratedArchives, compareArchives, fetchReleasePayload } from "./releases.js?v=split-23";
 import { escapeAttr, escapeHtml, formatBytes, formatMoscowDateTime, renderMarkdown } from "./utils.js?v=split-22";
 import { initBuildPanoramas } from "./panorama.js?v=split-26";
 import { startHead, startPlayer } from "./webgl.js?v=split-22";
@@ -66,7 +66,6 @@ const screenshotGroups = new Map();
 const buildModListPromises = new Map();
 const hotbarItemAnimations = [];
 let setActivePlayerSkin = null;
-let jsZipImportPromise = null;
 let hotbarAnimationFrame = null;
 let screenshotViewer = null;
 
@@ -1466,18 +1465,20 @@ async function loadReleases() {
 
     for (const build of BUILDS) {
         const files = collectBuildArchives(releases, build);
+        const generatedFiles = collectGeneratedArchives(releases, build);
         if (!files.length) {
             renderEmptyReleaseState(build, `Релизов для ${build.name} пока нет.`);
             continue;
         }
 
         files.sort(compareArchives);
-        renderDownloads(build, files);
+        generatedFiles.sort(compareArchives);
+        renderDownloads(build, files, generatedFiles);
         renderUpdates(build, files);
     }
 }
 
-function renderDownloads(build, files) {
+function renderDownloads(build, files, generatedFiles = []) {
     const refs = buildRefs.get(build.id);
     const [latest, ...older] = files;
 
@@ -1502,7 +1503,7 @@ function renderDownloads(build, files) {
         ? older.map((file) => renderVersionItem(build, file)).join("")
         : `<div class="version-item muted">Старых версий пока нет.</div>`;
 
-    renderGeneratedVersions(build, files, refs);
+    renderGeneratedVersions(build, files, refs, generatedFiles);
     renderLucideIcons();
 }
 
@@ -1538,21 +1539,21 @@ function renderArchiveTitle(file, build) {
   `;
 }
 
-function renderGeneratedVersions(build, files, refs) {
-    const packs = createGeneratedVersionPackages(build, files);
+function renderGeneratedVersions(build, files, refs, generatedFiles = []) {
+    const packs = createGeneratedVersionPackages(build, files, generatedFiles);
 
     refs.generatedVersions.innerHTML = packs.length
         ? packs.map((pack) => renderGeneratedVersionItem(pack)).join("")
         : `<div class="version-item muted">Недостаточно архивов для автосборки.</div>`;
 }
 
-function createGeneratedVersionPackages(build, files) {
+function createGeneratedVersionPackages(build, files, generatedFiles = []) {
     const latestRequiredVersion = files.find((file) => file.kind === "version" && file.required);
     const latestVersion = files.find((file) => file.kind === "version");
     const packs = [];
 
     if (latestRequiredVersion) {
-        packs.push(createGeneratedVersionPackage(build, latestRequiredVersion, files, {
+        packs.push(createGeneratedVersionPackage(build, latestRequiredVersion, files, generatedFiles, {
             type: "incomplete",
             label: "неполная",
             includeOptionalAdditions: false
@@ -1560,7 +1561,7 @@ function createGeneratedVersionPackages(build, files) {
     }
 
     if (latestVersion) {
-        packs.push(createGeneratedVersionPackage(build, latestVersion, files, {
+        packs.push(createGeneratedVersionPackage(build, latestVersion, files, generatedFiles, {
             type: "full",
             label: "полная",
             includeOptionalAdditions: true
@@ -1570,7 +1571,7 @@ function createGeneratedVersionPackages(build, files) {
     return packs.filter(Boolean);
 }
 
-function createGeneratedVersionPackage(build, baseVersion, files, options) {
+function createGeneratedVersionPackage(build, baseVersion, files, generatedFiles, options) {
     const additions = files
         .filter((file) => file.kind === "addition")
         .filter((file) => options.includeOptionalAdditions || file.required)
@@ -1579,6 +1580,11 @@ function createGeneratedVersionPackage(build, baseVersion, files, options) {
     const sources = [baseVersion, ...additions];
     const id = `${build.id}-${options.type}-${baseVersion.buildVersion}`;
     const fileName = `${build.assetName}-${baseVersion.mcVersion}-${baseVersion.buildVersion}+auto+${options.type}.zip`;
+    const prebuilt = generatedFiles.find((file) => {
+        return file.generatedType === options.type &&
+            file.mcVersion === baseVersion.mcVersion &&
+            file.buildVersion === baseVersion.buildVersion;
+    });
     const pack = {
         id,
         build,
@@ -1586,8 +1592,9 @@ function createGeneratedVersionPackage(build, baseVersion, files, options) {
         fileName,
         label: options.label,
         sources,
+        prebuilt,
         size: sources.reduce((total, file) => total + (Number(file.size) || 0), 0),
-        createdAt: sources[0]?.createdAt
+        createdAt: latestArchiveDate(sources)
     };
 
     generatedVersionPackages.set(id, pack);
@@ -1596,6 +1603,9 @@ function createGeneratedVersionPackage(build, baseVersion, files, options) {
 
 function renderGeneratedVersionItem(pack) {
     const displayName = cleanArchiveDisplayName(pack.fileName);
+    const downloadAction = pack.prebuilt?.url
+        ? `<a class="download-link download-link--primary" href="${escapeAttr(pack.prebuilt.url)}">/скачать</a>`
+        : `<a class="download-link download-link--primary" href="#" data-generated-version-id="${escapeAttr(pack.id)}">/скачать</a>`;
     return `
     <article class="version-item">
       <div class="archive-title">
@@ -1609,7 +1619,7 @@ function renderGeneratedVersionItem(pack) {
         <span class="tag">${pack.sources.length} арх.</span>
       </div>
       <div class="download-actions">
-        <a class="download-link download-link--primary" href="#" data-generated-version-id="${escapeAttr(pack.id)}">/скачать</a>
+        ${downloadAction}
       </div>
     </article>
   `;
@@ -1621,18 +1631,7 @@ async function downloadGeneratedVersion(pack, link) {
     link.setAttribute("aria-busy", "true");
 
     try {
-        const JSZip = await loadJsZip();
-        const outputZip = new JSZip();
-
-        for (const source of pack.sources) {
-            await appendArchiveToZip(outputZip, source, JSZip);
-        }
-
-        const blob = await outputZip.generateAsync({
-            type: "blob",
-            compression: "DEFLATE",
-            compressionOptions: {level: 6}
-        });
+        const blob = await createMergedZipBlob(pack.sources);
         triggerBlobDownload(blob, pack.fileName);
     } catch (error) {
         console.warn(error);
@@ -1643,32 +1642,142 @@ async function downloadGeneratedVersion(pack, link) {
     }
 }
 
-async function loadJsZip() {
-    jsZipImportPromise ||= import("https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm");
-    const module = await jsZipImportPromise;
-    return module.default;
+function latestArchiveDate(sources) {
+    return sources
+        .map((file) => new Date(file.createdAt || 0))
+        .filter((date) => Number.isFinite(date.getTime()))
+        .sort((a, b) => b - a)[0]?.toISOString() || sources[0]?.createdAt;
 }
 
-async function appendArchiveToZip(outputZip, source, JSZip) {
-    const response = await fetch(source.url);
-    if (!response.ok) {
-        throw new Error(`Archive ${source.fileName} ${response.status}`);
+async function createMergedZipBlob(sources) {
+    const entriesByPath = new Map();
+
+    for (const source of sources) {
+        const archive = parseZipArchive(await fetchArchiveBuffer(source), source);
+        for (const entry of archive.entries) {
+            entriesByPath.set(entry.path, entry);
+        }
     }
 
-    const inputZip = await JSZip.loadAsync(await response.arrayBuffer());
-    const writes = [];
-    inputZip.forEach((path, entry) => {
-        if (entry.dir) {
-            outputZip.folder(path);
-            return;
+    return buildZipBlob([...entriesByPath.values()]);
+}
+
+async function fetchArchiveBuffer(source) {
+    const errors = [];
+    const urls = [source.url, source.apiUrl].filter(Boolean);
+
+    for (const url of urls) {
+        try {
+            const response = await fetch(url, {
+                headers: url === source.apiUrl ? {Accept: "application/octet-stream"} : undefined
+            });
+            if (!response.ok) {
+                throw new Error(`${response.status} ${response.statusText}`.trim());
+            }
+
+            return response.arrayBuffer();
+        } catch (error) {
+            errors.push(`${url}: ${error.message}`);
+        }
+    }
+
+    throw new Error(`Archive ${source.fileName} download failed. ${errors.join("; ")}`);
+}
+
+function parseZipArchive(buffer, source) {
+    const bytes = new Uint8Array(buffer);
+    const view = new DataView(buffer);
+    const eocdOffset = findEndOfCentralDirectory(view);
+    const centralDirectorySize = view.getUint32(eocdOffset + 12, true);
+    const centralDirectoryOffset = view.getUint32(eocdOffset + 16, true);
+    const entryCount = view.getUint16(eocdOffset + 10, true);
+    const centralDirectoryEnd = centralDirectoryOffset + centralDirectorySize;
+    const localOffsets = [];
+    const centralRecords = [];
+    let offset = centralDirectoryOffset;
+
+    if (centralDirectoryEnd > bytes.length) {
+        throw new Error(`Archive ${source.fileName} central directory is outside file bounds.`);
+    }
+
+    for (let index = 0; index < entryCount; index += 1) {
+        if (view.getUint32(offset, true) !== 0x02014b50) {
+            throw new Error(`Archive ${source.fileName} has an invalid central directory.`);
         }
 
-        writes.push(entry.async("uint8array").then((content) => {
-            outputZip.file(path, content, {date: entry.date});
-        }));
-    });
+        const flags = view.getUint16(offset + 8, true);
+        const fileNameLength = view.getUint16(offset + 28, true);
+        const extraLength = view.getUint16(offset + 30, true);
+        const commentLength = view.getUint16(offset + 32, true);
+        const localOffset = view.getUint32(offset + 42, true);
+        const recordLength = 46 + fileNameLength + extraLength + commentLength;
+        const pathBytes = bytes.slice(offset + 46, offset + 46 + fileNameLength);
+        const path = decodeZipPath(pathBytes, flags);
+        const centralRecord = bytes.slice(offset, offset + recordLength);
 
-    await Promise.all(writes);
+        localOffsets.push(localOffset);
+        centralRecords.push({path, localOffset, centralRecord});
+        offset += recordLength;
+    }
+
+    const sortedLocalOffsets = [...localOffsets].sort((a, b) => a - b);
+    return {
+        entries: centralRecords.map((record) => {
+            const localIndex = sortedLocalOffsets.indexOf(record.localOffset);
+            const nextOffset = sortedLocalOffsets[localIndex + 1] ?? centralDirectoryOffset;
+            return {
+                path: record.path,
+                localSegment: bytes.slice(record.localOffset, nextOffset),
+                centralRecord: record.centralRecord,
+                source
+            };
+        })
+    };
+}
+
+function findEndOfCentralDirectory(view) {
+    const minOffset = Math.max(0, view.byteLength - 0xffff - 22);
+    for (let offset = view.byteLength - 22; offset >= minOffset; offset -= 1) {
+        if (view.getUint32(offset, true) === 0x06054b50) {
+            return offset;
+        }
+    }
+
+    throw new Error("ZIP end of central directory was not found.");
+}
+
+function decodeZipPath(bytes, flags) {
+    if (flags & 0x0800) {
+        return new TextDecoder("utf-8").decode(bytes);
+    }
+
+    return [...bytes].map((byte) => String.fromCharCode(byte)).join("");
+}
+
+function buildZipBlob(entries) {
+    const localParts = [];
+    const centralParts = [];
+    let offset = 0;
+
+    for (const entry of entries) {
+        const centralRecord = entry.centralRecord.slice();
+        new DataView(centralRecord.buffer).setUint32(42, offset, true);
+        localParts.push(entry.localSegment);
+        centralParts.push(centralRecord);
+        offset += entry.localSegment.length;
+    }
+
+    const centralDirectoryOffset = offset;
+    const centralDirectorySize = centralParts.reduce((total, part) => total + part.length, 0);
+    const eocd = new Uint8Array(22);
+    const eocdView = new DataView(eocd.buffer);
+    eocdView.setUint32(0, 0x06054b50, true);
+    eocdView.setUint16(8, entries.length, true);
+    eocdView.setUint16(10, entries.length, true);
+    eocdView.setUint32(12, centralDirectorySize, true);
+    eocdView.setUint32(16, centralDirectoryOffset, true);
+
+    return new Blob([...localParts, ...centralParts, eocd], {type: "application/zip"});
 }
 
 function triggerBlobDownload(blob, fileName) {
