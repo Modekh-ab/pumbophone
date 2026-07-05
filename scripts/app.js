@@ -116,6 +116,12 @@ const MOD_CATEGORY_BY_KEY = Object.entries(MOD_KEYS_BY_CATEGORY).reduce((lookup,
     }
     return lookup;
 }, {});
+const MOD_FILE_ALIASES = {
+    justenoughbotania: "jeb",
+    justenoughresources: "jer",
+    tinkersconstruct: "tconstruct",
+    corailtombstone: "tombstone"
+};
 
 const state = {
 
@@ -153,6 +159,7 @@ const els = {
 const buildRefs = new Map();
 const generatedVersionPackages = new Map();
 const screenshotGroups = new Map();
+const buildModListPromises = new Map();
 const hotbarItemAnimations = [];
 let setActivePlayerSkin = null;
 let jsZipImportPromise = null;
@@ -402,6 +409,7 @@ function renderBuilds() {
         image: root.querySelector("[data-hero-image]"),
             version: root.querySelector("[data-version-info]"),
             mods: root.querySelector("[data-mods-list]"),
+            modsCount: root.querySelector("[data-mods-count]"),
             latest: root.querySelector("[data-latest-download]"),
             oldVersions: root.querySelector("[data-old-versions]"),
             generatedVersions: root.querySelector("[data-generated-versions]"),
@@ -490,8 +498,11 @@ function renderBuild(build) {
                 </div>
               </details>
 
-              <details class="mini-panel">
-                <summary>/моды</summary>
+              <details class="mini-panel mods-panel">
+                <summary>
+                  <span>/моды</span>
+                  <span class="mod-count mod-count--total" data-mods-count>0</span>
+                </summary>
                 <div class="details-content">
                   <div class="mod-versions" data-mods-list></div>
                 </div>
@@ -977,22 +988,115 @@ function animateSkinSlide() {
     preview.classList.add(state.skinSlideDirection >= 0 ? "is-skin-slide-next" : "is-skin-slide-prev");
 }
 
-function renderMods(build, refs) {
-    if (!build.mods.length) {
+async function renderMods(build, refs) {
+    const modIds = await loadBuildModIds(build);
+    if (!modIds.length) {
+        updateBuildModsCount(refs, 0);
         refs.mods.innerHTML = `<div class="mod-empty muted">Список модов пока не указан.</div>`;
         return;
     }
 
-    const mods = build.mods
+    const mods = modIds
         .map((mod) => resolveBuildMod(build, mod))
         .filter(Boolean);
 
     if (!mods.length) {
+        updateBuildModsCount(refs, 0);
         refs.mods.innerHTML = `<div class="mod-empty muted">Список модов пока не указан.</div>`;
         return;
     }
 
+    updateBuildModsCount(refs, mods.length);
     refs.mods.innerHTML = renderModVersionGroups(mods);
+    initAnimatedDetails(refs.mods);
+    renderLucideIcons();
+}
+
+function updateBuildModsCount(refs, count) {
+    if (refs.modsCount) {
+        refs.modsCount.textContent = String(count);
+    }
+}
+
+async function loadBuildModIds(build) {
+    const explicitMods = Array.isArray(build.mods) ? build.mods : [];
+    const modListPath = build.modsPath || `resources/modpacks/${build.id}/mods.txt`;
+    const cacheKey = `${build.id}:${modListPath}`;
+
+    if (!buildModListPromises.has(cacheKey)) {
+        buildModListPromises.set(cacheKey, fetchBuildModIds(build, modListPath, explicitMods));
+    }
+
+    return buildModListPromises.get(cacheKey);
+}
+
+async function fetchBuildModIds(build, modListPath, fallbackMods) {
+    try {
+        const response = await fetch(new URL(modListPath, window.location.href).href, {cache: "no-store"});
+        if (!response.ok) {
+            return fallbackMods;
+        }
+
+        const text = await response.text();
+        const ids = parseBuildModList(text, build);
+        return ids.length ? ids : fallbackMods;
+    } catch (_error) {
+        return fallbackMods;
+    }
+}
+
+function parseBuildModList(text, build) {
+    const minecraftVersion = build.minecraftVersion || build.mcVersion;
+    const modLookup = MODS[minecraftVersion] || {};
+    const seen = new Set();
+
+    return String(text || "")
+        .split(/\r?\n/)
+        .map((line) => resolveModFileId(line, modLookup))
+        .filter((id) => {
+            if (!id || seen.has(id)) {
+                return false;
+            }
+
+            seen.add(id);
+            return true;
+        });
+}
+
+function resolveModFileId(fileName, modLookup) {
+    const normalizedFileName = normalizeModFileToken(fileName);
+    if (!normalizedFileName) {
+        return null;
+    }
+
+    const aliases = Object.entries(modLookup).flatMap(([key, mod]) => {
+        return [
+            [normalizeModFileToken(key), key],
+            [normalizeModFileToken(mod.name), key]
+        ];
+    });
+
+    for (const [alias, key] of Object.entries(MOD_FILE_ALIASES)) {
+        if (modLookup[key]) {
+            aliases.push([normalizeModFileToken(alias), key]);
+        }
+    }
+
+    aliases.sort((left, right) => right[0].length - left[0].length);
+
+    const match = aliases.find(([alias]) => alias && (
+        normalizedFileName === alias ||
+        normalizedFileName.startsWith(alias)
+    ));
+
+    return match?.[1] || null;
+}
+
+function normalizeModFileToken(value) {
+    return String(value || "")
+        .replace(/\.[^.]+$/, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
 }
 
 function resolveBuildMod(build, mod) {
@@ -1053,7 +1157,7 @@ function renderModCategoryPanel(category, mods) {
         : `<li class="mod-empty muted">Пока пусто.</li>`;
 
     return `
-      <details class="mini-panel mod-category-panel" ${mods.length ? "open" : ""}>
+      <details class="mini-panel mod-category-panel">
         <summary>
           <i class="mod-category-icon" data-lucide="${escapeAttr(category.icon)}" aria-hidden="true"></i>
           <span>${escapeHtml(category.command)}</span>
@@ -1373,8 +1477,8 @@ function formatZoomLabel(value) {
     return Number.isInteger(value) ? `${value}x` : `${value.toFixed(1)}x`;
 }
 
-function initAnimatedDetails() {
-    const detailsItems = Array.from(document.querySelectorAll("details"));
+function initAnimatedDetails(root = document) {
+    const detailsItems = Array.from(root.querySelectorAll("details"));
     const canAnimate = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     for (const details of detailsItems) {
@@ -1386,10 +1490,11 @@ function initAnimatedDetails() {
 
         details.classList.toggle("is-expanded", details.open);
 
-        if (!canAnimate) {
+        if (!canAnimate || details.dataset.detailsAnimationReady === "true") {
             continue;
         }
 
+        details.dataset.detailsAnimationReady = "true";
         summary.addEventListener("click", (event) => {
             event.preventDefault();
             details.dataset.animating === "true" ? undefined : toggleDetails(details, content);
