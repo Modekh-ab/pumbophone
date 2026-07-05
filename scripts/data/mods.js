@@ -5,97 +5,97 @@ export const MODS = {
             name: "MixinBooter",
             version: "10.7",
             url: "https://www.curseforge.com/minecraft/mc-mods/mixin-booter",
-            description: "добавляет поддержку Sponge Mixin для Forge 1.12.2, позволяя модам безопасно изменять код игры."
+            description: "нужен сразу нескольким модам, добавляет поддержку Mixin'ов для Forge 1.12.2."
         },
         aiimprovements: {
             name: "AI Improvements",
             version: "0.0.1b3",
             url: "https://www.curseforge.com/minecraft/mc-mods/ai-improvements",
-            description: "оптимизирует работу искусственного интеллекта мобов, снижая нагрузку на процессор."
+            description: "оптимизирует работу ИИ мобов."
         },
         appleskin: {
             name: "AppleSkin",
             version: "1.0.14",
             url: "https://www.curseforge.com/minecraft/mc-mods/appleskin",
-            description: "показывает информацию о насыщении, голоде и восстановлении еды."
+            description: "показывает инфу о насыщении, голоде и восстановлении еды."
         },
         aquaacrobatics: {
             name: "Aqua Acrobatics",
             version: "1.15.4",
             url: "https://www.curseforge.com/minecraft/mc-mods/aqua-acrobatics",
-            description: "переносит механику плавания и передвижения под водой из Minecraft 1.13+."
+            description: "переносит механику плавани из Minecraft 1.13+."
         },
         aquaculture: {
             name: "Aquaculture 2",
             version: "1.6.8",
             url: "https://www.curseforge.com/minecraft/mc-mods/aquaculture",
-            description: "значительно расширяет рыбалку, добавляя новых рыб, снасти и экипировку."
+            description: "расширяет рыбалку, добавляет новых рыб, снасти, экипировку."
         },
         artemislib: {
             name: "ArtemisLib",
             version: "1.0.6",
             url: "https://www.curseforge.com/minecraft/mc-mods/artemislib",
-            description: "библиотека для работы модов, использующих расширенную систему моделей и анимаций существ."
+            description: "нужен был для уменьшающей рубашки в Artifacts."
         },
         artifacts: {
             name: "Artifacts",
             version: "1.2.4",
             url: "https://www.curseforge.com/minecraft/mc-mods/artifacts",
-            description: "добавляет редкие артефакты с уникальными эффектами, которые можно найти во время исследований."
+            description: "добавляет артефакты с уникальными эффектами, которые можно найти в сундуках."
         },
         atum: {
             name: "Atum 2: Return to the Sands",
             version: "2.0.20",
             url: "https://www.curseforge.com/minecraft/mc-mods/atum",
-            description: "добавляет новое измерение в стиле Древнего Египта с данжами, мобами и снаряжением."
+            description: "добавляет измерение в стиле Древнего Египта с данжами, мобами и блаблабла (а ещё куча опытов с мобов)."
         },
         baubles: {
             name: "Baubles",
             version: "1.5.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/baubles",
-            description: "добавляет дополнительные слоты экипировки для колец, амулетов, поясов и других аксессуаров."
+            description: "добавляет доп слоты экипировки для аксессуаров (кольца, амулеты, пояс и тд)."
         },
         betterrecords: {
             name: "Better Records",
             version: "1.6.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/better-records",
-            description: "расширяет возможности музыкальных пластинок и проигрывателей."
+            description: "своя музыка на красивых пластиночках (было на финал)."
         },
         bookshelf: {
             name: "Bookshelf",
             version: "2.3.590",
             url: "https://www.curseforge.com/minecraft/mc-mods/bookshelf",
-            description: "универсальная библиотека, необходимая для работы множества других модов."
+            description: "для Enchantment Descriptions."
         },
         botania: {
             name: "Botania",
             version: "r1.10-364.4",
             url: "https://www.curseforge.com/minecraft/mc-mods/botania",
-            description: "магический техномод, основанный на использовании маны, цветов и природной магии."
+            description: "магический техномод, мана, цветы, природная магия, мистер картофель."
         },
         botanicadditions: {
             name: "Botanic Additions",
             version: "12.2.6",
             url: "https://www.curseforge.com/minecraft/mc-mods/botanic-additions",
-            description: "расширяет Botania новыми предметами, механизмами и возможностями."
+            description: "расширяет Botania (Мана Тессеракт, Бассейн мечтаний и тд)."
         },
         carryon: {
             name: "Carry On",
             version: "1.12.7.23",
             url: "https://www.curseforge.com/minecraft/mc-mods/carry-on",
-            description: "позволяет переносить сундуки, бочки, спавнеры и некоторых мобов без разрушения."
+            description: "даёт переносить сущности на руках."
         },
         chickenchunks: {
             name: "ChickenChunks",
             version: "2.4.2.74",
             url: "https://www.curseforge.com/minecraft/mc-mods/chicken-chunks-1-8",
-            description: "добавляет загрузчики чанков для поддержания работы механизмов на расстоянии."
+            description: "добавляет загрузчики чанков."
         },
         chocolatequestrepoured: {
             name: "Chocolate Quest Repoured",
             version: "2.8.0B",
             url: "https://www.curseforge.com/minecraft/mc-mods/cqrepoured",
-            description: "добавляет огромное количество структур, подземелий, боссов, NPC и приключенческого контента."
+            description: "добавляет кууучу данжей с боссами и прогрессией мобов по этажам."
         },
         clumps: {
             name: "Clumps",
@@ -107,31 +107,25 @@ export const MODS = {
             name: "CodeChicken Lib",
             version: "3.2.3.358",
             url: "https://www.curseforge.com/minecraft/mc-mods/codechicken-lib-1-8",
-            description: "библиотека, необходимая для работы модов семейства CodeChicken."
+            description: "для Chicken Chunks."
         },
         controlling: {
             name: "Controlling",
             version: "3.0.12.4",
             url: "https://www.curseforge.com/minecraft/mc-mods/controlling",
-            description: "значительно упрощает поиск, сортировку и настройку горячих клавиш."
+            description: "улучшение настройки клавиш."
         },
         corpse: {
             name: "Corpse",
             version: "1.0.8",
             url: "https://www.curseforge.com/minecraft/mc-mods/corpse",
-            description: "после смерти создаёт тело игрока, в котором сохраняются все вещи."
-        },
-        creativecore: {
-            name: "CreativeCore",
-            version: "1.10.71",
-            url: "https://www.curseforge.com/minecraft/mc-mods/creativecore",
-            description: "библиотека, используемая многими модами автора CreativeMD."
+            description: "после смерти создаёт тело игрока со всеми вещами и компас смерти (такое се, не самое удобное)."
         },
         enchantingplusplus: {
             name: "Enchanting Plus Plus",
             version: "5.1.0",
             url: "https://www.curseforge.com/minecraft/mc-mods/enchanting-plus-plus",
-            description: "расширяет систему зачарований и даёт больше контроля над получаемыми чарами."
+            description: "даёт улучшенный стол для контроля над чарами."
         },
         enchantmentdescriptions: {
             name: "Enchantment Descriptions",
@@ -143,37 +137,31 @@ export const MODS = {
             name: "EnderCore",
             version: "0.5.78",
             url: "https://www.curseforge.com/minecraft/mc-mods/endercore",
-            description: "библиотека, необходимая для работы Ender IO и связанных модов."
+            description: "для EnderIO."
         },
         enderio: {
             name: "Ender IO",
             version: "5.3.72",
             url: "https://www.curseforge.com/minecraft/mc-mods/ender-io",
-            description: "добавляет энергетические сети, трубы, машины, броню, инструменты и автоматизацию."
+            description: "добавляет энергию, трубы, машины, броню, инструменты, автоматизацию  (крутейший мод с хорошей логистикой, но сравнительно небольшой, автоматизация не такая разнообразная)."
         },
         erebus: {
             name: "The Erebus",
             version: "1.0.32",
             url: "https://www.curseforge.com/minecraft/mc-mods/the-erebus",
-            description: "добавляет отдельное измерение насекомых с новыми биомами, мобами, данжами и ресурсами."
+            description: "добавляет измерение насекомых с новыми биомами, мобами, данжами и ресурсами (качественный и полезный, но больше не надо(()."
         },
         fallingtree: {
             name: "FallingTree",
             version: "2.4.0",
             url: "https://www.curseforge.com/minecraft/mc-mods/falling-tree",
-            description: "позволяет быстро срубать дерево целиком или ускоряет добычу связанных брёвен."
-        },
-        farsight: {
-            name: "Farsight",
-            version: "1.6",
-            url: "https://www.curseforge.com/minecraft/mc-mods/farsight",
-            description: "сохраняет уже загруженные чанки на клиенте, визуально увеличивая дальность обзора."
+            description: "срубать дерево целиком."
         },
         fastfurnace: {
             name: "FastFurnace",
             version: "1.3.1",
             url: "https://www.curseforge.com/minecraft/mc-mods/fastfurnace",
-            description: "оптимизирует работу печей и снижает нагрузку от проверки рецептов."
+            description: "оптимизирует печи и снижает нагрузку от проверки рецептов."
         },
         fastworkbench: {
             name: "FastWorkbench",
@@ -185,7 +173,7 @@ export const MODS = {
             name: "Forgelin",
             version: "1.8.4",
             url: "https://www.curseforge.com/minecraft/mc-mods/shadowfacts-forgelin",
-            description: "добавляет Kotlin-библиотеки для Forge-модов, написанных на Kotlin."
+            description: "добавляет Kotlin-библиотеки для некоторых модов."
         },
         fpsreducer: {
             name: "FPS Reducer",
@@ -197,49 +185,43 @@ export const MODS = {
             name: "GeckoLib",
             version: "3.0.31",
             url: "https://www.curseforge.com/minecraft/mc-mods/geckolib",
-            description: "библиотека для сложных моделей и анимаций существ, предметов и блоков."
+            description: "библиотека для моделей и анимаций сущностей (не помню моды)."
         },
         hammerlib: {
             name: "HammerLib",
             version: "12.2.60",
             url: "https://www.curseforge.com/minecraft/mc-mods/hammer-lib",
-            description: "библиотека и набор утилит, необходимых для работы некоторых модов."
+            description: "библиотека для модов Зейта (Botanic Additions, ...)."
         },
         harvest: {
             name: "Harvest",
             version: "1.2.8-25",
             url: "https://www.curseforge.com/minecraft/mc-mods/harvest",
-            description: "позволяет собирать урожай правой кнопкой мыши без полного разрушения растения."
+            description: "собирать урожай на ПКМ."
         },
         hats: {
             name: "Hats",
             version: "7.1.1",
             url: "https://www.curseforge.com/minecraft/mc-mods/hats",
-            description: "добавляет коллекционные декоративные шляпы, которые можно получать с мобов."
+            description: "добавляет коллекционные шляпки с мобов (было на финал)."
         },
         hwyla: {
             name: "Hwyla",
             version: "1.8.26-B41",
             url: "https://www.curseforge.com/minecraft/mc-mods/hwyla",
-            description: "показывает информацию о блоке или существе, на которое смотрит игрок."
+            description: "показывает инфу, на что смотрит игрок."
         },
         icbmclassic: {
             name: "ICBM Classic",
             version: "6.5.5",
             url: "https://www.curseforge.com/minecraft/mc-mods/icbm-classic",
-            description: "добавляет ракеты, взрывчатку, пусковые установки и военную технику."
+            description: "ракеты, взрывчатка, пусковые установки (хороший мод, но дорогущие рецепты с кучей ТНТ и Визеров, для фастфуда не оч было)."
         },
         ichunutil: {
             name: "iChunUtil",
             version: "7.2.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/ichunutil",
-            description: "библиотека, необходимая для работы модов iChun, включая Hats."
-        },
-        inventoryhud: {
-            name: "Inventory HUD+",
-            version: "3.4.4",
-            url: "https://www.curseforge.com/minecraft/mc-mods/inventory-hud-forge",
-            description: "показывает инвентарь, эффекты и прочую информацию прямо на игровом HUD."
+            description: "для Hats."
         },
         inventorytweaks: {
             name: "Inventory Tweaks",
@@ -251,265 +233,241 @@ export const MODS = {
             name: "Iron Chests",
             version: "7.0.72.847",
             url: "https://www.curseforge.com/minecraft/mc-mods/iron-chests",
-            description: "добавляет улучшенные сундуки из железа, золота, алмаза и других материалов."
-        },
-        itemborders: {
-            name: "Item Borders",
-            version: "1.2.0",
-            url: "https://www.curseforge.com/minecraft/mc-mods/item-borders",
-            description: "добавляет цветные рамки предметам в зависимости от их редкости."
-        },
-        itemphysiclite: {
-            name: "ItemPhysic Lite",
-            version: "1.3.7",
-            url: "https://www.curseforge.com/minecraft/mc-mods/itemphysic-lite",
-            description: "меняет физику выпавших предметов, делая их поведение визуально реалистичнее."
+            description: "улучшенные сундуки с кучей слотов."
         },
         ivtoolkit: {
             name: "IvToolkit",
             version: "1.3.3",
             url: "https://www.curseforge.com/minecraft/mc-mods/ivtoolkit",
-            description: "библиотека, необходимая для работы некоторых модов со структурами и генерацией."
+            description: "библиотека, необходимая для некоторых модов с данжами и генерацией (не помню какие)."
         },
         jade: {
             name: "Jade",
             version: "0.1.0",
             url: "https://www.curseforge.com/minecraft/mc-mods/jade",
-            description: "показывает информацию о блоках, сущностях и механизмах при наведении взгляда."
+            description: "улучшенная Hwyla."
         },
         jeiintegration: {
             name: "JEI Integration",
             version: "1.6.0",
             url: "https://www.curseforge.com/minecraft/mc-mods/jei-integration",
-            description: "расширяет интеграцию JEI, добавляя больше информации о предметах и рецептах."
+            description: "расширяет интеграцию JEI, добавляет больше инфы о предметах и рецептах."
         },
         jei: {
             name: "Just Enough Items",
             version: "4.16.1.301",
             url: "https://www.curseforge.com/minecraft/mc-mods/jei",
-            description: "показывает рецепты и способы применения предметов прямо в игре."
+            description: "чё это?"
         },
         journeymap: {
             name: "JourneyMap",
             version: "5.7.1p3",
             url: "https://www.curseforge.com/minecraft/mc-mods/journeymap",
-            description: "добавляет миникарту, большую карту мира, метки и отображение исследованной территории."
+            description: "неоптимизированное говно на карту (ладно, просто бывает тяжеловато из-за кэширования кучи png-картинок)."
         },
         jeb: {
             name: "Just Enough Botania",
             version: "0.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/just-enough-botania",
-            description: "добавляет в JEI рецепты и информацию, связанные с Botania."
+            description: "JEI + Botania."
         },
         jer: {
             name: "Just Enough Resources",
             version: "0.9.2.60",
             url: "https://www.curseforge.com/minecraft/mc-mods/just-enough-resources-jer",
-            description: "показывает в JEI информацию о генерации руд, дропе мобов и содержимом данжей."
+            description: "показывает в JEI инфу о генерации руд, дропе мобов и содержимом данжей."
         },
         konkrete: {
             name: "Konkrete",
             version: "1.6.1",
             url: "https://www.curseforge.com/minecraft/mc-mods/konkrete",
-            description: "библиотека с общими утилитами и API для модов Keksuccino."
-        },
-        legendarytooltips: {
-            name: "Legendary Tooltips",
-            version: "1.1.11",
-            url: "https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips",
-            description: "добавляет красивые цветные рамки и оформление подсказок предметов."
+            description: "для модов Keksuccino (не помню какие)."
         },
         libraryex: {
             name: "LibraryEx",
             version: "1.2.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/libraryex",
-            description: "библиотека, необходимая для работы некоторых модов, включая Chocolate Quest Repoured."
+            description: "для Chocolate Quest Repoured."
         },
         llibrary: {
             name: "LLibrary",
             version: "1.7.20",
             url: "https://www.curseforge.com/minecraft/mc-mods/llibrary",
-            description: "библиотека для создания сложных мобов, анимаций и моделей."
+            description: "библиотека для создания сложных мобов, анимаций и моделей (не помню какие моды)."
         },
         lootr: {
             name: "Lootr",
             version: "0.6.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/lootr",
-            description: "создаёт индивидуальную добычу из сундуков для каждого игрока."
-        },
-        lunatriuscore: {
-            name: "LunatriusCore",
-            version: "1.2.0.42",
-            url: "https://www.curseforge.com/minecraft/mc-mods/lunatriuscore",
-            description: "библиотека, необходимая для работы модов Lunatrius, включая Schematica."
+            description: "личные сундуки для каждого игрока (на Фастфуде была проблема с Atum и CQR, что сундуки не работали - нужно работать с конфигами)."
         },
         mahoutsukai: {
             name: "Mahou Tsukai",
             version: "1.19.56",
             url: "https://www.curseforge.com/minecraft/mc-mods/mahou-tsukai",
-            description: "магический мод с собственной системой заклинаний, ритуалов и магической энергии."
+            description: "магический мод с собственной системой заклинаний, ритуалов и магической энергии (толком не опробовали)."
         },
         mousetweaks: {
             name: "Mouse Tweaks",
             version: "2.10",
             url: "https://www.curseforge.com/minecraft/mc-mods/mouse-tweaks",
-            description: "значительно улучшает управление инвентарём с помощью мыши."
+            description: "улучшает управление инвентарём с помощью мыши."
         },
         mowziesmobs: {
             name: "Mowzie's Mobs",
             version: "1.5.8",
             url: "https://www.curseforge.com/minecraft/mc-mods/mowzies-mobs",
-            description: "добавляет качественно анимированных уникальных существ и боссов."
+            description: "добавляет уникальных существ и боссов (мало и бесполезно(()."
         },
         naturescompass: {
             name: "Nature's Compass",
             version: "1.8.5",
             url: "https://www.curseforge.com/minecraft/mc-mods/natures-compass",
-            description: "позволяет искать любой биом и указывает направление к нему."
+            description: "чё это?"
         },
         netherex: {
             name: "NetherEx",
             version: "2.2.5",
             url: "https://www.curseforge.com/minecraft/mc-mods/netherex",
-            description: "полностью расширяет Нижний мир новыми биомами, мобами, растениями и ресурсами."
+            description: "расширение Ада новыми биомами, мобами, растениями и ресурсами."
         },
         norecipebook: {
             name: "No Recipe Book",
             version: "1.2.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/no-recipe-book",
-            description: "полностью отключает книгу рецептов ванильного Minecraft."
+            description: "отрубает книгу рецептов ванильного Minecraft."
         },
         onlinepicframe: {
             name: "Online Picture Frame",
             version: "1.5.0-pre1",
             url: "https://www.curseforge.com/minecraft/mc-mods/online-picture-frame",
-            description: "позволяет отображать изображения из интернета прямо в игровом мире."
+            description: "отображает картинки из инета в игре (было на финал)."
         },
         openblocks: {
             name: "OpenBlocks",
             version: "1.8.1",
             url: "https://www.curseforge.com/minecraft/mc-mods/openblocks",
-            description: "добавляет множество полезных декоративных и технических блоков, предметов и механизмов."
+            description: "добавляет полезные декоративных и технических блоки, предметы и механизмы (было на финал)."
         },
         openmodslib: {
             name: "OpenModsLib",
             version: "0.12.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/openmodslib",
-            description: "библиотека, необходимая для работы OpenBlocks и других модов OpenMods."
+            description: "для OpenBlocks."
         },
         optifine: {
             name: "OptiFine",
             version: "HD_U_E3",
             url: "https://optifine.net/downloads",
-            description: "значительно улучшает производительность игры, добавляет тонкую настройку графики, поддержку шейдеров и HD-текстур."
+            description: "фу говно."
         },
         overchanter: {
             name: "Overchanter",
             version: "1.0.0.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/overchanter",
-            description: "расширяет возможности зачарования, позволяя получать более высокие уровни чар."
+            description: "даёт чарить сильно выше максимальных уровней (жрёт кучу опыта)"
         },
         patchouli: {
             name: "Patchouli",
             version: "1.0-23.6",
             url: "https://www.curseforge.com/minecraft/mc-mods/patchouli",
-            description: "библиотека и система внутриигровых руководств, используемая многими модами."
+            description: "для гайдов в разных модах."
         },
         placebo: {
             name: "Placebo",
             version: "1.6.1",
             url: "https://www.curseforge.com/minecraft/mc-mods/placebo",
-            description: "библиотека Shadows_of_Fire с различными API и утилитами для других модов."
+            description: "для FastFurnace и FatWorkbench."
         },
         reachfix: {
             name: "Reach Fix",
             version: "1.1.3",
             url: "https://www.curseforge.com/minecraft/mc-mods/reach-fix",
-            description: "исправляет ошибки, связанные с дальностью взаимодействия с блоками и сущностями."
+            description: "исправляет баги с дальностью взаимодействия с блоками и сущностями."
         },
         surge: {
             name: "Surge",
             version: "2.0.77",
             url: "https://www.curseforge.com/minecraft/mc-mods/surge",
-            description: "содержит исправления ошибок и оптимизации, улучшающие стабильность игры."
+            description: "исправляет какие-то баги, не зн."
         },
         texfix: {
             name: "TexFix",
             version: "4.0",
             url: "https://www.curseforge.com/minecraft/mc-mods/texfix",
-            description: "уменьшает потребление оперативной памяти за счёт оптимизации хранения текстур."
+            description: "уменьшает потребление оперативки за счёт оптимизации хранения текстур."
         },
         timecore: {
             name: "Time Core",
             version: "1.0.1.1",
             url: "https://www.curseforge.com/minecraft/mc-mods/time-core",
-            description: "служебная библиотека, необходимая для работы модов автора TimeConqueror."
+            description: "для модов ТОГО САМОГО АНДРЕЯ, а именно для Overchanter и Loot Games."
         },
         torcherino: {
             name: "Torcherino",
             version: "7.6",
             url: "https://www.curseforge.com/minecraft/mc-mods/torcherino",
-            description: "ускоряет случайные игровые тики и работу механизмов в области действия специальных факелов."
+            description: "читерский факел для ускорения роста урожая."
         },
         torchmaster: {
             name: "TorchMaster",
             version: "1.8.5.0",
             url: "https://www.curseforge.com/minecraft/mc-mods/torchmaster",
-            description: "добавляет устройства, предотвращающие спавн враждебных мобов в заданной области."
+            description: "для предотвращения спавна мобов в радиусе."
         },
         vintagefix: {
             name: "VintageFix",
             version: "0.7.0",
             url: "https://www.curseforge.com/minecraft/mc-mods/vintagefix",
-            description: "существенно ускоряет запуск Minecraft, уменьшает использование памяти и исправляет ряд проблем Forge 1.12.2."
+            description: "ускоряет запуск игры, уменьшает использование памяти и исправляет какие-то баги Forge 1.12.2."
         },
         xaerolib: {
-            name: "Xaero's Minimap Fair-Play Edition Library",
+            name: "XaeroLib",
             version: "1.1.0",
             url: "https://www.curseforge.com/minecraft/mc-mods/xaeros-minimap",
-            description: "служебная библиотека, необходимая для работы миникарты и карты мира Xaero."
+            description: "для Xaero's Minimap и World map."
         },
         xaerominimap: {
             name: "Xaero's Minimap",
             version: "25.3.13",
             url: "https://www.curseforge.com/minecraft/mc-mods/xaeros-minimap",
-            description: "добавляет настраиваемую миникарту с метками, координатами, пещерным режимом и отображением существ."
+            description: "чуть более оптимизированная мини-карта с кучей крутых функций."
         },
         xaeroworldmap: {
             name: "Xaero's World Map",
             version: "1.40.16",
             url: "https://www.curseforge.com/minecraft/mc-mods/xaeros-world-map",
-            description: "добавляет полноэкранную карту мира с быстрым масштабированием, поиском и интеграцией с миникартой Xaero."
+            description: "чуть более оптимизированная карта с кучей крутых функций."
         },
         actuallyadditions: {
             name: "Actually Additions",
             version: "r152",
             url: "https://www.curseforge.com/minecraft/mc-mods/actually-additions",
-            description: "крупный технологический мод, добавляющий машины, генераторы, автоматизацию, фермы и множество полезных устройств."
+            description: "большой техномод со своей энергией (Crystal Flux), машинами, генераторами, автоматизацией, фермами и других полезностей."
         },
         actuallybaubles: {
             name: "Actually Baubles",
             version: "1.1",
             url: "https://www.curseforge.com/minecraft/mc-mods/actually-baubles",
-            description: "добавляет совместимость Actually Additions с системой аксессуаров Baubles."
+            description: "Actually Additions + Baubles."
         },
         advancedrocketry: {
             name: "Advanced Rocketry",
             version: "2.2.11",
             url: "https://www.curseforge.com/minecraft/mc-mods/advanced-rocketry",
-            description: "позволяет строить ракеты, космические станции и исследовать процедурно генерируемые планеты."
+            description: "космос ееееее (ракеты, космические станции, процедурно генерируемые планеты)."
         },
         atomicscience: {
             name: "Atomic Science",
             version: "3.0.6b19",
             url: "https://www.curseforge.com/minecraft/mc-mods/atomic-science",
-            description: "добавляет реалистичную ядерную энергетику, реакторы и связанные технологии."
+            description: "реалистичная ядерка, реакторы и связанные технологии."
         },
         baublesex: {
             name: "Baubles Expanded",
             version: "2.3.5",
             url: "https://www.curseforge.com/minecraft/mc-mods/baubles-expanded",
-            description: "расширяет возможности Baubles, добавляя новые типы слотов и API."
+            description: "улучшенный Baubles (аксессуары)."
         },
         betterfps: {
             name: "BetterFps",
@@ -521,7 +479,7 @@ export const MODS = {
             name: "Chunk Loaders",
             version: "1.2.9a",
             url: "https://www.curseforge.com/minecraft/mc-mods/chunk-loaders",
-            description: "добавляет различные блоки для принудительной загрузки чанков."
+            description: "загрузчик чанков."
         },
         conarm: {
             name: "Construct's Armory",

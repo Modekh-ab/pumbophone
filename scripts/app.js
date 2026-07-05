@@ -3,7 +3,8 @@ import { BUILDS } from "./data/builds.js";
 import { FAQS } from "./data/faqs.js";
 import { MODS } from "./data/mods.js";
 import { SKINS } from "./data/skins.js";
-
+import { MOD_FILE_ALIASES, MOD_CATEGORIES, MOD_CATEGORY_ALIASES, MOD_KEYS_BY_CATEGORY }
+    from "./data/mods_keys.js";
 
 import { collectBuildArchives, compareArchives, fetchReleasePayload } from "./releases.js?v=split-22";
 import { escapeAttr, escapeHtml, formatBytes, formatMoscowDateTime, renderMarkdown } from "./utils.js?v=split-22";
@@ -17,98 +18,7 @@ const SKIN_NAME_COUNTS = SKINS.reduce((counts, skin) => {
     return counts;
 }, new Map());
 
-const MOD_CATEGORIES = [
-    {id: "content", label: "Контент", command: "/контент", icon: "package-open"},
-    {id: "qol", label: "QoL", command: "/qol", icon: "sparkles"},
-    {id: "optimization", label: "Оптимизация", command: "/оптимизация", icon: "fire-extinguisher"},
-    {id: "compat", label: "Совместимости", command: "/совместимости", icon: "cable"},
-    {id: "libraries", label: "Библиотеки", command: "/библиотеки", icon: "blocks"}
-];
-
 const MOD_CATEGORY_IDS = new Set(MOD_CATEGORIES.map((category) => category.id));
-const MOD_CATEGORY_ALIASES = {
-    content: "content",
-    "контент": "content",
-    qol: "qol",
-    "куол": "qol",
-    optimization: "optimization",
-    optimize: "optimization",
-    "оптимизация": "optimization",
-    libraries: "libraries",
-    library: "libraries",
-    libs: "libraries",
-    "библиотеки": "libraries",
-    "библиотека": "libraries"
-};
-const MOD_KEYS_BY_CATEGORY = {
-    content: [],
-    qol: [
-        "appleskin",
-        "carryon",
-        "controlling",
-        "corpse",
-        "enchantmentdescriptions",
-        "fallingtree",
-        "harvest",
-        "hwyla",
-        "inventoryhud",
-        "inventorytweaks",
-        "itemborders",
-        "itemphysiclite",
-        "jade",
-        "jeiintegration",
-        "jei",
-        "journeymap",
-        "jeb",
-        "jer",
-        "legendarytooltips",
-        "mousetweaks",
-        "naturescompass",
-        "norecipebook",
-        "onlinepicframe",
-        "reachfix",
-        "xaerominimap",
-        "xaeroworldmap"
-    ],
-    compat: [
-        "emberstic"
-    ],
-    optimization: [
-        "aiimprovements",
-        "clumps",
-        "farsight",
-        "fastfurnace",
-        "fastworkbench",
-        "fpsreducer",
-        "optifine",
-        "surge",
-        "texfix",
-        "vintagefix"
-    ],
-    libraries: [
-        "artemislib",
-        "baubles",
-        "bookshelf",
-        "codechickenlib",
-        "creativecore",
-        "endercore",
-        "forgelin",
-        "geckolib",
-        "hammerlib",
-        "ichunutil",
-        "ivtoolkit",
-        "konkrete",
-        "libraryex",
-        "llibrary",
-        "lunatriuscore",
-        "mixinbooter",
-        "openmodslib",
-        "patchouli",
-        "placebo",
-        "timecore",
-        "xaerolib"
-    ]
-};
 
 const MOD_CATEGORY_BY_KEY = Object.entries(MOD_KEYS_BY_CATEGORY).reduce((lookup, [category, keys]) => {
     for (const key of keys) {
@@ -116,12 +26,6 @@ const MOD_CATEGORY_BY_KEY = Object.entries(MOD_KEYS_BY_CATEGORY).reduce((lookup,
     }
     return lookup;
 }, {});
-const MOD_FILE_ALIASES = {
-    justenoughbotania: "jeb",
-    justenoughresources: "jer",
-    tinkersconstruct: "tconstruct",
-    corailtombstone: "tombstone"
-};
 
 const state = {
 
