@@ -17,7 +17,7 @@ jobs:
     env:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
-      WEBHOOK_NAME: "Apelsin Releases"
+      WEBHOOK_NAME: "СБОРКИ ПУМБОФОНА"
       EMBED_COLOR: "15895592"
 
     steps:
@@ -132,24 +132,11 @@ jobs:
               "color": int(os.environ.get("EMBED_COLOR", "15895592")),
               "fields": [
                   {
-                      "name": "Версия",
-                      "value": tag_name,
-                      "inline": True
-                  },
-                  {
-                      "name": "Репозиторий",
-                      "value": repo_value,
-                      "inline": True
-                  },
-                  {
                       "name": "Файлы",
                       "value": assets_text,
                       "inline": False
                   }
-              ],
-              "footer": {
-                  "text": f"Опубликовал: {author_login}"
-              }
+              ]
           }
           
           if published_at:
