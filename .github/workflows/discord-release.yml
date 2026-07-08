@@ -46,28 +46,26 @@ jobs:
           repository = event["repository"]
           sender = event.get("sender", {})
 
-          release_name = release.get("name") or release.get("tag_name") or "Без названия"
-          tag_name = release.get("tag_name") or "—"
+          release_name = release.get("name") or release.get("tag_name") or "Нн"
+          tag_name = release.get("tag_name") or "-"
           release_url = release.get("html_url") or repository.get("html_url")
           release_body = (release.get("body") or "").strip()
           published_at = release.get("published_at") or release.get("created_at")
           prerelease = bool(release.get("prerelease"))
 
           if not release_body:
-              release_body = "Описание изменений не указано."
+              release_body = "Нема изменений"
 
-          # Discord ограничивает description embed до 4096 символов.
-          # Оставляем запас под остальные поля и общий лимит embed.
           max_description = 3500
           if len(release_body) > max_description:
               release_body = release_body[: max_description - 40].rstrip()
-              release_body += "\n\n…Полный список изменений — на странице релиза."
+              release_body += "\n\n…Полный список изменений на странице релиза"
 
           assets = release.get("assets") or []
           asset_lines = []
 
           for asset in assets[:5]:
-              name = str(asset.get("name") or "Скачать файл").replace("]", r"\]")
+              name = str(asset.get("name") or "СКАЧАТЬ").replace("]", r"\]")
               url = asset.get("browser_download_url")
               size_bytes = int(asset.get("size") or 0)
 
@@ -87,12 +85,12 @@ jobs:
           if asset_lines:
               assets_text = "\n".join(asset_lines)
           else:
-              assets_text = "Прикреплённых файлов нет. Откройте страницу релиза."
+              assets_text = "Прикреплённых файлов нет, открой страницу релиза"
 
           if len(assets_text) > 1000:
-              assets_text = assets_text[:997] + "…"
+              assets_text = assets_text[:997] + "..."
 
-          release_kind = "Предварительный релиз" if prerelease else "Новый релиз"
+          release_kind = "ПРЕРЕЛИЗ" if prerelease else "НОВАЯ ВЕРСИЯ"
           title = f"{release_kind}: {release_name}"
           if len(title) > 256:
               title = title[:253] + "…"
@@ -121,24 +119,11 @@ jobs:
                       "color": int(os.environ.get("EMBED_COLOR", "15895592")),
                       "fields": [
                           {
-                              "name": "Версия",
-                              "value": tag_name,
-                              "inline": True
-                          },
-                          {
-                              "name": "Репозиторий",
-                              "value": repo_value,
-                              "inline": True
-                          },
-                          {
                               "name": "Файлы",
                               "value": assets_text,
                               "inline": False
                           }
                       ],
-                      "footer": {
-                          "text": f"Опубликовал: {author_login}"
-                      },
                       "timestamp": published_at
                   }
               ]
