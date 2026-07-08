@@ -3,6 +3,7 @@ name: discord-release
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -42,9 +43,28 @@ jobs:
           event_path = Path(os.environ["GITHUB_EVENT_PATH"])
           event = json.loads(event_path.read_text(encoding="utf-8"))
 
-          release = event["release"]
           repository = event["repository"]
           sender = event.get("sender", {})
+          
+          if event.get("release"):
+              release = event["release"]
+          else:
+              release = {
+                  "name": "Тестовое уведомление",
+                  "tag_name": "test",
+                  "html_url": repository.get("html_url"),
+                  "body": (
+                      "Ручная проверка GitHub Actions завершена. "
+                      "Webhook подключён к Discord правильно."
+                  ),
+                  "published_at": None,
+                  "created_at": None,
+                  "prerelease": False,
+                  "assets": [],
+                  "author": {
+                      "login": os.environ.get("GITHUB_ACTOR", "GitHub Actions")
+                  }
+              }
 
           release_name = release.get("name") or release.get("tag_name") or "Нн"
           tag_name = release.get("tag_name") or "-"
@@ -105,6 +125,36 @@ jobs:
               or "неизвестный пользователь"
           )
 
+          embed = {
+              "title": title,
+              "url": release_url,
+              "description": release_body,
+              "color": int(os.environ.get("EMBED_COLOR", "15895592")),
+              "fields": [
+                  {
+                      "name": "Версия",
+                      "value": tag_name,
+                      "inline": True
+                  },
+                  {
+                      "name": "Репозиторий",
+                      "value": repo_value,
+                      "inline": True
+                  },
+                  {
+                      "name": "Файлы",
+                      "value": assets_text,
+                      "inline": False
+                  }
+              ],
+              "footer": {
+                  "text": f"Опубликовал: {author_login}"
+              }
+          }
+          
+          if published_at:
+              embed["timestamp"] = published_at
+
           payload = {
               "username": os.environ.get("WEBHOOK_NAME", "GitHub Releases"),
               "avatar_url": repository.get("owner", {}).get("avatar_url"),
@@ -112,20 +162,7 @@ jobs:
                   "parse": []
               },
               "embeds": [
-                  {
-                      "title": title,
-                      "url": release_url,
-                      "description": release_body,
-                      "color": int(os.environ.get("EMBED_COLOR", "15895592")),
-                      "fields": [
-                          {
-                              "name": "Файлы",
-                              "value": assets_text,
-                              "inline": False
-                          }
-                      ],
-                      "timestamp": published_at
-                  }
+                embed
               ]
           }
 
