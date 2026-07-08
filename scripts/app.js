@@ -82,10 +82,10 @@ let hotbarAnimationFrame = null;
 let screenshotViewer = null;
 
 function init() {
-  initAnimatedFavicon();
-  renderHotbar();
-  renderInventoryOverlays();
-  renderSkinControls();
+    initAnimatedFavicon();
+    renderHotbar();
+    renderInventoryOverlays();
+    renderSkinControls();
     renderBuilds();
     initBuildPanoramas();
     renderFaq();
@@ -101,52 +101,52 @@ function init() {
     initAnimatedDetails();
     loadReleases();
     startHeads();
-  startInventoryPlayer();
+    startInventoryPlayer();
 }
 
 async function initAnimatedFavicon() {
-  const iconLink = document.querySelector('link[rel="icon"]') || document.createElement("link");
-  const shortcutLink = document.querySelector('link[rel="shortcut icon"]');
-  iconLink.rel = "icon";
-  iconLink.type = "image/png";
-  if (!iconLink.parentNode) {
-    document.head.append(iconLink);
-  }
-
-  try {
-    const response = await fetch("resources/img/favicon-frames/manifest.json?v=site-icon-2", { cache: "force-cache" });
-    if (!response.ok) {
-      throw new Error(`favicon manifest ${response.status}`);
+    const iconLink = document.querySelector('link[rel="icon"]') || document.createElement("link");
+    const shortcutLink = document.querySelector('link[rel="shortcut icon"]');
+    iconLink.rel = "icon";
+    iconLink.type = "image/png";
+    if (!iconLink.parentNode) {
+        document.head.append(iconLink);
     }
 
-    const manifest = await response.json();
-    const frames = Array.isArray(manifest.frames) ? manifest.frames : [];
-    if (frames.length < 2) {
-      return;
+    try {
+        const response = await fetch("resources/img/favicon-frames/manifest.json?v=site-icon-2", { cache: "force-cache" });
+        if (!response.ok) {
+            throw new Error(`favicon manifest ${response.status}`);
+        }
+
+        const manifest = await response.json();
+        const frames = Array.isArray(manifest.frames) ? manifest.frames : [];
+        if (frames.length < 2) {
+            return;
+        }
+
+        frames.forEach((frame) => {
+            const image = new Image();
+            image.src = frame.src;
+        });
+
+        let frameIndex = 0;
+        const setFrame = () => {
+            const frame = frames[frameIndex];
+            const href = frame.src;
+            iconLink.href = href;
+            if (shortcutLink) {
+                shortcutLink.href = href;
+                shortcutLink.type = "image/png";
+            }
+            frameIndex = (frameIndex + 1) % frames.length;
+            window.setTimeout(setFrame, Math.max(80, Number(frame.delay) || 120));
+        };
+
+        setFrame();
+    } catch (error) {
+        console.warn(error);
     }
-
-    frames.forEach((frame) => {
-      const image = new Image();
-      image.src = frame.src;
-    });
-
-    let frameIndex = 0;
-    const setFrame = () => {
-      const frame = frames[frameIndex];
-      const href = frame.src;
-      iconLink.href = href;
-      if (shortcutLink) {
-        shortcutLink.href = href;
-        shortcutLink.type = "image/png";
-      }
-      frameIndex = (frameIndex + 1) % frames.length;
-      window.setTimeout(setFrame, Math.max(80, Number(frame.delay) || 120));
-    };
-
-    setFrame();
-  } catch (error) {
-    console.warn(error);
-  }
 }
 
 function renderHotbar() {
@@ -321,7 +321,7 @@ function renderBuilds() {
         const root = document.querySelector(`#build-${build.id}`);
         buildRefs.set(build.id, {
             root,
-        image: root.querySelector("[data-hero-image]"),
+            image: root.querySelector("[data-hero-image]"),
             version: root.querySelector("[data-version-info]"),
             mods: root.querySelector("[data-mods-list]"),
             modsCount: root.querySelector("[data-mods-count]"),
@@ -1590,12 +1590,14 @@ function createGeneratedVersionPackage(build, baseVersion, files, generatedFiles
         .filter((file) => compareBuildVersions(file.buildVersion, baseVersion.buildVersion) >= 0)
         .sort(compareArchivesOldestFirst);
     const sources = [baseVersion, ...additions];
-    const id = `${build.id}-${options.type}-${baseVersion.buildVersion}`;
-    const fileName = `${build.assetName}-${baseVersion.mcVersion}-${baseVersion.buildVersion}+auto+${options.type}.zip`;
+    const latestVersionSource = sources.slice().sort(compareArchives)[0];
+    const generatedBuildVersion = latestVersionSource.buildVersion;
+    const id = `${build.id}-${options.type}-${generatedBuildVersion}`;
+    const fileName = `${build.assetName}-${baseVersion.mcVersion}-${generatedBuildVersion}+auto+${options.type}.zip`;
     const prebuilt = generatedFiles.find((file) => {
         return file.generatedType === options.type &&
             file.mcVersion === baseVersion.mcVersion &&
-            file.buildVersion === baseVersion.buildVersion;
+            file.buildVersion === generatedBuildVersion;
     });
     const pack = {
         id,

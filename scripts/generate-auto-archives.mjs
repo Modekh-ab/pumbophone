@@ -103,15 +103,19 @@ function createGeneratedPack(assetName, baseVersion, files, type, includeOptiona
         .filter((file) => compareBuildVersions(file.buildVersion, baseVersion.buildVersion) >= 0)
         .sort(compareArchivesOldestFirst);
     const sources = [baseVersion, ...additions];
-    const latestSource = sources
+    const latestVersionSource = sources.slice().sort(compareArchives)[0];
+    const latestPublishedSource = sources
         .slice()
         .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))[0];
 
     return {
         type,
-        fileName: `${assetName}-${baseVersion.mcVersion}-${baseVersion.buildVersion}+auto+${type}.zip`,
+        assetName,
+        mcVersion: baseVersion.mcVersion,
+        buildVersion: latestVersionSource.buildVersion,
+        fileName: `${assetName}-${baseVersion.mcVersion}-${latestVersionSource.buildVersion}+auto+${type}.zip`,
         sources,
-        targetReleaseId: latestSource.releaseId
+        targetReleaseId: latestPublishedSource.releaseId
     };
 }
 
@@ -123,7 +127,13 @@ async function uploadGeneratedPack(pack) {
 
     for (const release of releases) {
         for (const asset of release.assets || []) {
-            if (asset.name === pack.fileName) {
+            const archive = parseArchive(asset, release);
+            const isPreviousGeneratedPack = archive &&
+                normalizeName(archive.name) === normalizeName(pack.assetName) &&
+                archive.mcVersion === pack.mcVersion &&
+                archive.generatedType === pack.type;
+
+            if (asset.name === pack.fileName || isPreviousGeneratedPack) {
                 await githubFetch(asset.url, {method: "DELETE"});
             }
         }
