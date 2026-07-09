@@ -38,12 +38,17 @@ export function renderMarkdown(source) {
     let index = 0;
 
     while (index < lines.length) {
-        const line = lines[index];
+        let line = lines[index];
 
         if (!line.trim()) {
             index += 1;
             continue;
         }
+
+        line = line.replace(
+            /<a\s+(?:name|id)=["']([^"']+)["']\s*><\/a>/i,
+            (_, id) => `<span id="${escapeHtml(id)}"></span>`
+        );
 
         const fence = line.match(/^```([A-Za-z0-9_-]+)?\s*$/);
         if (fence) {
@@ -60,10 +65,14 @@ export function renderMarkdown(source) {
         }
 
         const heading = line.match(/^(#{1,6})\s+(.+)$/);
+
         if (heading) {
             const level = heading[1].length;
-            html.push(`<h${level}>${renderInlineMarkdown(heading[2].trim())}</h${level}>`);
+            const id = slugifyHeading(heading[2].trim());
+
+            html.push(`<h${level} id="${id}">${renderInlineMarkdown(heading[2].trim())}</h${level}>`);
             index += 1;
+
             continue;
         }
 
@@ -136,9 +145,15 @@ function renderInlineMarkdown(source) {
 
     let text = String(source)
         .replace(/`([^`\n]+)`/g, (_match, code) => saveToken(`<code>${escapeHtml(code)}</code>`))
-        .replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (_match, label, href) => {
-            return saveToken(`<a href="${escapeAttr(href)}" target="_blank" rel="noreferrer">${renderInlineMarkdown(label)}</a>`);
-        });
+        .replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g,
+            (_match, text, href) => {
+                if (href.startsWith("#")) {
+                    return `<a href="${href}" class="anchor-link">${renderInlineMarkdown(text)}</a>`;
+                }
+
+                return `<a href="${href}" target="_blank" rel="noopener noreferrer"> ${renderInlineMarkdown(text)}</a>`;
+                // return saveToken(`<a href="${escapeAttr(href)}" target="_blank" rel="noreferrer">${renderInlineMarkdown(label)}</a>`);
+            });
 
     text = escapeHtml(text)
         .replace(/(https?:\/\/[^\s<]+)/g, (url) => `<a href="${escapeAttr(url)}" target="_blank" rel="noreferrer">${url}</a>`)
@@ -159,6 +174,15 @@ export function escapeHtml(value) {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+}
+
+function slugifyHeading(text) {
+    return text
+        .toLowerCase()
+        .trim()
+        .replace(/<[^>]+>/g, "")
+        .replace(/[^\p{L}\p{N}\s-]/gu, "")
+        .replace(/\s+/g, "-");
 }
 
 export function escapeAttr(value) {

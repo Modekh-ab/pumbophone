@@ -95,5 +95,11 @@ a:focus-visible {
     pointer-events: none;
 }
 
-
-
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+    scroll-margin-top: 96px;
+}

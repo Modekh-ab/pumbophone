@@ -103,19 +103,16 @@ function createGeneratedPack(assetName, baseVersion, files, type, includeOptiona
         .filter((file) => compareBuildVersions(file.buildVersion, baseVersion.buildVersion) >= 0)
         .sort(compareArchivesOldestFirst);
     const sources = [baseVersion, ...additions];
-    const latestVersionSource = sources.slice().sort(compareArchives)[0];
-    const latestPublishedSource = sources
-        .slice()
-        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))[0];
+    const targetSource = sources.slice().sort(compareArchives)[0];
 
     return {
         type,
         assetName,
         mcVersion: baseVersion.mcVersion,
-        buildVersion: latestVersionSource.buildVersion,
-        fileName: `${assetName}-${baseVersion.mcVersion}-${latestVersionSource.buildVersion}+auto+${type}.zip`,
+        buildVersion: targetSource.buildVersion,
+        fileName: `${assetName}-${baseVersion.mcVersion}-${targetSource.buildVersion}+auto+${type}.zip`,
         sources,
-        targetReleaseId: latestPublishedSource.releaseId
+        targetReleaseId: targetSource.releaseId
     };
 }
 

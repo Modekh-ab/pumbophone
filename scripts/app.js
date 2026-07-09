@@ -90,6 +90,7 @@ function init() {
     initBuildPanoramas();
     renderFaq();
     renderSliderControls();
+    addMdLinkSmoothScroll(); // TEST
     bindInventoryToggle();
     bindSkinControls();
     bindBuildSwipe();
@@ -555,6 +556,31 @@ function renderFaqLegendBadge(item) {
 
     const requirementClass = item.variant === "optional" ? "requirement-icon--optional" : "requirement-icon--required";
     return `<span class="requirement-icon ${requirementClass}">${escapeHtml(item.label)}</span>`;
+}
+
+function addMdLinkSmoothScroll() {
+    document.addEventListener("click", e => {
+        const link = e.target.closest("a[href^='#']");
+
+        if (!link)
+            return;
+
+        const id = link.getAttribute("href").substring(1);
+
+        const target = document.getElementById(id);
+
+        if (!target)
+            return;
+
+        e.preventDefault();
+
+        target.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+        history.replaceState(null, "", "#" + id);
+    });
 }
 
 function bindInventoryToggle() {
