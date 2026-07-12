@@ -7,11 +7,22 @@ on:
       - published
       - edited
 
+concurrency:
+  group: archives-auto-build-${{ github.event.release.id || github.ref || github.run_id }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
 jobs:
   build-archives:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.action == 'published' ||
+      github.event.changes.body ||
+      github.event.changes.name ||
+      github.event.changes.prerelease ||
+      github.event.changes.target_commitish
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

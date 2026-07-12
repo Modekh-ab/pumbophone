@@ -45,10 +45,12 @@ export function renderMarkdown(source) {
             continue;
         }
 
-        line = line.replace(
-            /<a\s+(?:name|id)=["']([^"']+)["']\s*><\/a>/i,
-            (_, id) => `<span id="${escapeHtml(id)}"></span>`
-        );
+        const anchor = line.match(/^\s*<a\s+(?:name|id)=["']([^"']+)["']\s*><\/a>\s*$/i);
+        if (anchor) {
+            html.push(`<span id="${escapeAttr(anchor[1])}" class="markdown-anchor"></span>`);
+            index += 1;
+            continue;
+        }
 
         const fence = line.match(/^```([A-Za-z0-9_-]+)?\s*$/);
         if (fence) {
@@ -143,17 +145,25 @@ function renderInlineMarkdown(source) {
         return marker;
     };
 
-    let text = String(source)
-        .replace(/`([^`\n]+)`/g, (_match, code) => saveToken(`<code>${escapeHtml(code)}</code>`))
-        .replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g,
-            (_match, text, href) => {
-                if (href.startsWith("#")) {
-                    return `<a href="${href}" class="anchor-link">${renderInlineMarkdown(text)}</a>`;
-                }
+    const renderLinkToken = (label, href, wrapLabelInBrackets = false) => {
+        const renderedLabel = renderInlineMarkdown(label);
+        const displayLabel = wrapLabelInBrackets ? `[${renderedLabel}]` : renderedLabel;
+        const attrs = href.startsWith("#")
+            ? `href="${escapeAttr(href)}" class="anchor-link"`
+            : `href="${escapeAttr(href)}" target="_blank" rel="noopener noreferrer"`;
 
-                return `<a href="${href}" target="_blank" rel="noopener noreferrer"> ${renderInlineMarkdown(text)}</a>`;
-                // return saveToken(`<a href="${escapeAttr(href)}" target="_blank" rel="noreferrer">${renderInlineMarkdown(label)}</a>`);
-            });
+        return saveToken(`<a ${attrs}>${displayLabel}</a>`);
+    };
+
+    let text = String(source)
+        .replace(/<a\s+(?:name|id)=["']([^"']+)["']\s*><\/a>/gi, (_match, id) => {
+            return saveToken(`<span id="${escapeAttr(id)}" class="markdown-anchor"></span>`);
+        })
+        .replace(/`([^`\n]+)`/g, (_match, code) => saveToken(`<code>${escapeHtml(code)}</code>`))
+        .replace(/\[\[([\s\S]+?)\]\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g,
+            (_match, label, href) => renderLinkToken(label, href, true))
+        .replace(/\[([^\]\n]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g,
+            (_match, label, href) => renderLinkToken(label, href));
 
     text = escapeHtml(text)
         .replace(/(https?:\/\/[^\s<]+)/g, (url) => `<a href="${escapeAttr(url)}" target="_blank" rel="noreferrer">${url}</a>`)

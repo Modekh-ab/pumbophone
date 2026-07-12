@@ -1319,19 +1319,24 @@ details:not([open]) > .details-content {
 .update-heading {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 0.58rem;
-    margin-bottom: 0.82rem;
+    align-items: flex-start;
+    gap: 0.4rem 0.58rem;
+    margin-bottom: 0.95rem;
+    padding-bottom: 0.72rem;
+    border-bottom: 1px solid rgba(255, 249, 207, 0.12);
 }
 
 .update-heading strong {
+    flex: 1 1 100%;
+    display: block;
     color: #fff8b7;
-    font-size: clamp(1.08rem, 2vw, 1.38rem);
-    line-height: 1.18;
+    font-size: clamp(1.18rem, 2.2vw, 1.56rem);
+    line-height: 1.1;
     text-shadow: 2px 2px 0 #111;
 }
 
 .release-version {
+    margin-left: auto;
     display: inline-grid;
     min-width: 2.7rem;
     min-height: 2.2rem;
