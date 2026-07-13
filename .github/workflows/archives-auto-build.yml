@@ -19,10 +19,7 @@ jobs:
     if: >
       github.event_name == 'workflow_dispatch' ||
       github.event.action == 'published' ||
-      github.event.changes.body ||
-      github.event.changes.name ||
-      github.event.changes.prerelease ||
-      github.event.changes.target_commitish
+      github.event.action == 'edited'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,3 +32,32 @@ jobs:
         run: node scripts/generate-auto-archives.mjs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Trigger Discord release sync
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_RELEASE_ID: ${{ github.event.release.id }}
+        run: |
+          set -euo pipefail
+
+          RELEASE_ID="${EVENT_RELEASE_ID:-}"
+
+          if [ -z "$RELEASE_ID" ]; then
+            RELEASE_ID="$(
+              gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=30" \
+                --jq '[.[] | select(.draft == false)][0].id'
+            )"
+          fi
+
+          if [ -z "$RELEASE_ID" ] || [ "$RELEASE_ID" = "null" ]; then
+            echo "::error::Unknown GitHub Release for sync."
+            exit 1
+          fi
+
+          gh api \
+            --method POST \
+            "repos/${GITHUB_REPOSITORY}/dispatches" \
+            -f event_type="release_archives_ready" \
+            -F "client_payload[release_id]=$RELEASE_ID"
+
+          echo "Sent repository_dispatch for release ID $RELEASE_ID."
