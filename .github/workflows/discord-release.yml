@@ -2,26 +2,34 @@ name: discord-release
 
 on:
   release:
-    types: [published]
+    types: [published, edited]
   workflow_dispatch:
 
+  # schedule:
+  #   - cron: "*/5 * * * *"
+
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: discord-release-sync
+  cancel-in-progress: false
 
 jobs:
   notify-discord:
-    name: Send release to Discord
+    name: Sync release with Discord
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 5
 
     env:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       WEBHOOK_NAME: "Сборки Пумбофона"
 
       DISCORD_NOTIFY_USER_IDS: "1296386810791989248,1509977878174105733,1402310879000793145,1511398872428183763"
 
     steps:
-      - name: validate-webhook-secret
+      - name: validate-secrets
         shell: bash
         run: |
           if [ -z "$DISCORD_WEBHOOK_URL" ]; then
@@ -29,278 +37,628 @@ jobs:
             exit 1
           fi
 
-      - name: send-ds-notification
+          if [ -z "$GITHUB_TOKEN" ]; then
+            echo "::error::GITHUB_TOKEN is missing."
+            exit 1
+          fi
+
+      - name: sync-discord-message
         shell: bash
         run: |
           python3 <<'PY'
+          import hashlib
           import json
           import os
+          import re
           import sys
           import urllib.error
+          import urllib.parse
           import urllib.request
           from pathlib import Path
 
-          event_path = Path(os.environ["GITHUB_EVENT_PATH"])
-          event = json.loads(event_path.read_text(encoding="utf-8"))
+          EVENT_NAME = os.environ.get("GITHUB_EVENT_NAME", "")
+          EVENT_PATH = Path(os.environ["GITHUB_EVENT_PATH"])
+          EVENT = json.loads(EVENT_PATH.read_text(encoding="utf-8"))
 
-          repository = event["repository"]
+          REPOSITORY = EVENT.get("repository") or {}
+          REPOSITORY_NAME = (
+              REPOSITORY.get("full_name")
+              or os.environ.get("GITHUB_REPOSITORY", "")
+          )
 
-          if event.get("release"):
-              release = event["release"]
-          else:
-              release = {
+          GITHUB_TOKEN = os.environ["GITHUB_TOKEN"].strip()
+          WEBHOOK_URL = os.environ["DISCORD_WEBHOOK_URL"].strip()
+          WEBHOOK_NAME = os.environ.get(
+              "WEBHOOK_NAME",
+              "GitHub Releases"
+          )
+
+          # Скрытый маркер в описании GitHub Release:
+          # <!-- discord-release-message:MESSAGE_ID:STATE_HASH -->
+          MARKER_RE = re.compile(
+              r"<!--\s*discord-release-message:"
+              r"(\d+):([0-9a-f]{64})\s*-->"
+          )
+
+          def github_request(method, path, payload=None):
+              url = f"https://api.github.com{path}"
+              data = None
+
+              if payload is not None:
+                  data = json.dumps(
+                      payload,
+                      ensure_ascii=False
+                  ).encode("utf-8")
+
+              request = urllib.request.Request(
+                  url,
+                  data=data,
+                  headers={
+                      "Accept": "application/vnd.github+json",
+                      "Authorization": f"Bearer {GITHUB_TOKEN}",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                      "User-Agent": (
+                          "GitHub-Actions-Discord-Release-Sync"
+                      )
+                  },
+                  method=method
+              )
+
+              with urllib.request.urlopen(
+                  request,
+                  timeout=30
+              ) as response:
+                  raw = response.read().decode(
+                      "utf-8",
+                      errors="replace"
+                  )
+
+                  if not raw:
+                      return None
+
+                  return json.loads(raw)
+
+          def discord_webhook_base():
+              parts = urllib.parse.urlsplit(WEBHOOK_URL)
+
+              return urllib.parse.urlunsplit((
+                  parts.scheme,
+                  parts.netloc,
+                  parts.path.rstrip("/"),
+                  "",
+                  ""
+              ))
+
+          def discord_request(method, url, payload):
+              request = urllib.request.Request(
+                  url,
+                  data=json.dumps(
+                      payload,
+                      ensure_ascii=False
+                  ).encode("utf-8"),
+                  headers={
+                      "Content-Type": "application/json",
+                      "User-Agent": (
+                          "GitHub-Actions-Discord-Release-Sync"
+                      )
+                  },
+                  method=method
+              )
+
+              with urllib.request.urlopen(
+                  request,
+                  timeout=30
+              ) as response:
+                  raw = response.read().decode(
+                      "utf-8",
+                      errors="replace"
+                  )
+
+                  if not raw:
+                      return None
+
+                  return json.loads(raw)
+
+          def parse_notify_user_ids():
+              raw_ids = os.environ.get(
+                  "DISCORD_NOTIFY_USER_IDS",
+                  ""
+              )
+
+              user_ids = [
+                  user_id.strip()
+                  for user_id in raw_ids.split(",")
+                  if user_id.strip()
+              ]
+
+              placeholders = {
+                  "PASTE_MONDLESS_USER_ID_HERE"
+              }
+
+              user_ids = [
+                  user_id
+                  for user_id in user_ids
+                  if user_id not in placeholders
+              ]
+
+              invalid_ids = [
+                  user_id
+                  for user_id in user_ids
+                  if not user_id.isdigit()
+              ]
+
+              if invalid_ids:
+                  raise ValueError(
+                      "Invalid Discord user IDs: "
+                      + ", ".join(invalid_ids)
+                  )
+
+              return user_ids
+
+          NOTIFY_USER_IDS = parse_notify_user_ids()
+
+          def remove_marker(body):
+              body = body or ""
+              return MARKER_RE.sub("", body).rstrip()
+
+          def read_marker(body):
+              match = MARKER_RE.search(body or "")
+
+              if not match:
+                  return None, None
+
+              return match.group(1), match.group(2)
+
+          def build_message(release):
+              release_name = (
+                  release.get("name")
+                  or release.get("tag_name")
+                  or "Без названия"
+              )
+
+              release_url = (
+                  release.get("html_url")
+                  or REPOSITORY.get("html_url")
+                  or (
+                      "https://github.com/"
+                      + REPOSITORY_NAME
+                  )
+              )
+
+              release_body = remove_marker(
+                  release.get("body") or ""
+              ).strip()
+
+              if not release_body:
+                  release_body = "Изменения не указаны."
+
+              prerelease = bool(
+                  release.get("prerelease")
+              )
+
+              mentions = " ".join(
+                  f"<@{user_id}>"
+                  for user_id in NOTIFY_USER_IDS
+              )
+
+              assets = release.get("assets") or []
+              asset_lines = []
+
+              for asset in assets[:5]:
+                  name = str(
+                      asset.get("name")
+                      or "Скачать файл"
+                  ).replace("]", r"\]")
+
+                  if len(name) > 120:
+                      name = name[:117] + "..."
+
+                  url = asset.get(
+                      "browser_download_url"
+                  )
+                  size_bytes = int(
+                      asset.get("size") or 0
+                  )
+
+                  if size_bytes >= 1024 * 1024:
+                      size = (
+                          f"{size_bytes / (1024 * 1024):.1f} МБ"
+                      )
+                  elif size_bytes >= 1024:
+                      size = (
+                          f"{size_bytes / 1024:.1f} КБ"
+                      )
+                  else:
+                      size = f"{size_bytes} Б"
+
+                  if url:
+                      asset_lines.append(
+                          f"[{name}]({url}) — {size}"
+                      )
+
+              if len(assets) > 5:
+                  asset_lines.append(
+                      f"И ещё файлов: {len(assets) - 5}"
+                  )
+
+              if asset_lines:
+                  assets_text = "\n".join(
+                      asset_lines
+                  )
+              else:
+                  assets_text = (
+                      "Прикреплённых файлов нет — "
+                      f"[открыть страницу релиза]"
+                      f"({release_url})"
+                  )
+
+              release_kind = (
+                  "ПРЕРЕЛИЗ"
+                  if prerelease
+                  else "НОВАЯ ВЕРСИЯ"
+              )
+
+              header = (
+                  f"## {release_kind}: "
+                  f"[{release_name}]({release_url})"
+                  "\n\n"
+              )
+
+              files_section = (
+                  "\n\n**Файлы Апельштейна**\n"
+                  + assets_text
+              )
+
+              mentions_section = (
+                  "\n\n" + mentions
+                  if mentions
+                  else ""
+              )
+
+              reserved_length = (
+                  len(header)
+                  + len(files_section)
+                  + len(mentions_section)
+              )
+
+              max_body_length = (
+                  2000 - reserved_length
+              )
+
+              if max_body_length < 0:
+                  raise ValueError(
+                      "The file list and mentions exceed "
+                      "Discord's 2000-character limit."
+                  )
+
+              if len(release_body) > max_body_length:
+                  suffix = (
+                      "\n\n…Полный список изменений — "
+                      f"[на странице релиза]"
+                      f"({release_url})"
+                  )
+
+                  trim_to = max(
+                      0,
+                      max_body_length - len(suffix)
+                  )
+
+                  release_body = (
+                      release_body[:trim_to].rstrip()
+                      + suffix
+                  )
+
+              content = (
+                  header
+                  + release_body
+                  + files_section
+                  + mentions_section
+              )
+
+              # В fingerprint входят не только видимый текст,
+              # но и метаданные assets. Поэтому замена файла
+              # определяется даже при том же имени и размере.
+              asset_state = [
+                  {
+                      "id": asset.get("id"),
+                      "name": asset.get("name"),
+                      "size": asset.get("size"),
+                      "url": asset.get(
+                          "browser_download_url"
+                      ),
+                      "updated_at": asset.get(
+                          "updated_at"
+                      ),
+                      "digest": asset.get("digest")
+                  }
+                  for asset in assets
+              ]
+
+              fingerprint_data = {
+                  "content": content,
+                  "assets": asset_state
+              }
+
+              state_hash = hashlib.sha256(
+                  json.dumps(
+                      fingerprint_data,
+                      ensure_ascii=False,
+                      sort_keys=True
+                  ).encode("utf-8")
+              ).hexdigest()
+
+              payload = {
+                  "username": WEBHOOK_NAME,
+                  "avatar_url": REPOSITORY.get(
+                      "owner",
+                      {}
+                  ).get("avatar_url"),
+                  "content": content,
+
+                  # SUPPRESS_EMBEDS: ссылки кликабельны,
+                  # но Discord не создаёт лишние preview-карточки.
+                  "flags": 4,
+
+                  "allowed_mentions": {
+                      "parse": [],
+                      "users": NOTIFY_USER_IDS
+                  }
+              }
+
+              return payload, state_hash
+
+          def store_marker(release, message_id, state_hash):
+              release_id = release.get("id")
+
+              if not release_id:
+                  raise ValueError(
+                      "GitHub release ID is missing."
+                  )
+
+              clean_body = remove_marker(
+                  release.get("body") or ""
+              )
+
+              marker = (
+                  "<!-- discord-release-message:"
+                  f"{message_id}:{state_hash} -->"
+              )
+
+              new_body = (
+                  f"{clean_body}\n\n{marker}"
+                  if clean_body
+                  else marker
+              )
+
+              github_request(
+                  "PATCH",
+                  (
+                      f"/repos/{REPOSITORY_NAME}"
+                      f"/releases/{release_id}"
+                  ),
+                  {
+                      "body": new_body
+                  }
+              )
+
+              release["body"] = new_body
+
+          def create_discord_message(payload):
+              create_url = (
+                  discord_webhook_base()
+                  + "?wait=true"
+              )
+
+              result = discord_request(
+                  "POST",
+                  create_url,
+                  payload
+              )
+
+              message_id = str(
+                  (result or {}).get("id") or ""
+              )
+
+              if not message_id:
+                  raise RuntimeError(
+                      "Discord did not return a message ID."
+                  )
+
+              print(
+                  "Created Discord message "
+                  f"{message_id}."
+              )
+
+              return message_id
+
+          def edit_discord_message(
+              message_id,
+              payload
+          ):
+              edit_url = (
+                  discord_webhook_base()
+                  + f"/messages/{message_id}"
+              )
+
+              discord_request(
+                  "PATCH",
+                  edit_url,
+                  payload
+              )
+
+              print(
+                  "Updated Discord message "
+                  f"{message_id}."
+              )
+
+          def sync_release(
+              release,
+              allow_create
+          ):
+              message_id, old_state_hash = read_marker(
+                  release.get("body") or ""
+              )
+
+              payload, new_state_hash = build_message(
+                  release
+              )
+
+              if message_id:
+                  if old_state_hash == new_state_hash:
+                      print(
+                          "Release "
+                          f"{release.get('tag_name')} "
+                          "has not changed."
+                      )
+                      return
+
+                  try:
+                      edit_discord_message(
+                          message_id,
+                          payload
+                      )
+                  except urllib.error.HTTPError as error:
+                      # Если сообщение вручную удалили из Discord,
+                      # можно восстановить его только на событии
+                      # публикации. При обычной синхронизации
+                      # не создаём дубль автоматически.
+                      if error.code == 404:
+                          print(
+                              "Discord message "
+                              f"{message_id} was not found.",
+                              file=sys.stderr
+                          )
+                          return
+                      raise
+
+                  store_marker(
+                      release,
+                      message_id,
+                      new_state_hash
+                  )
+                  return
+
+              if not allow_create:
+                  print(
+                      "Release "
+                      f"{release.get('tag_name')} "
+                      "has no Discord message marker; "
+                      "skipping to avoid a duplicate."
+                  )
+                  return
+
+              message_id = create_discord_message(
+                  payload
+              )
+
+              store_marker(
+                  release,
+                  message_id,
+                  new_state_hash
+              )
+
+          def run_manual_test():
+              fake_release = {
                   "name": "Тестовое уведомление",
                   "tag_name": "test",
-                  "html_url": repository.get("html_url"),
+                  "html_url": (
+                      REPOSITORY.get("html_url")
+                      or (
+                          "https://github.com/"
+                          + REPOSITORY_NAME
+                      )
+                  ),
                   "body": (
-                      "Ручная проверка GitHub Actions завершена. "
-                      "Webhook подключён к Discord правильно."
+                      "Ручная проверка GitHub Actions "
+                      "завершена. Webhook подключён "
+                      "к Discord правильно."
                   ),
                   "prerelease": False,
                   "assets": []
               }
 
-          release_name = (
-              release.get("name")
-              or release.get("tag_name")
-              or "Без названия"
-          )
-          release_url = (
-              release.get("html_url")
-              or repository.get("html_url")
-          )
-          release_body = (release.get("body") or "").strip()
-          prerelease = bool(release.get("prerelease"))
-
-          if not release_body:
-              release_body = "Изменения не указаны."
-
-          raw_user_ids = os.environ.get(
-              "DISCORD_NOTIFY_USER_IDS",
-              ""
-          )
-
-          notify_user_ids = [
-              user_id.strip()
-              for user_id in raw_user_ids.split(",")
-              if user_id.strip()
-          ]
-
-          placeholder_ids = {
-              "PASTE_MONDLESS_USER_ID_HERE"
-          }
-
-          notify_user_ids = [
-              user_id
-              for user_id in notify_user_ids
-              if user_id not in placeholder_ids
-          ]
-
-          invalid_user_ids = [
-              user_id
-              for user_id in notify_user_ids
-              if not user_id.isdigit()
-          ]
-
-          if invalid_user_ids:
-              print(
-                  "Invalid Discord user IDs: "
-                  + ", ".join(invalid_user_ids),
-                  file=sys.stderr
+              payload, _ = build_message(
+                  fake_release
               )
-              sys.exit(1)
 
-          mentions = " ".join(
-              f"<@{user_id}>"
-              for user_id in notify_user_ids
-          )
+              create_discord_message(payload)
 
-          assets = release.get("assets") or []
-          asset_lines = []
+          def run_scheduled_sync():
+              releases = github_request(
+                  "GET",
+                  (
+                      f"/repos/{REPOSITORY_NAME}"
+                      "/releases?per_page=30"
+                  )
+              ) or []
 
-          for asset in assets[:5]:
-              name = str(
-                  asset.get("name") or "Скачать файл"
-              ).replace("]", r"\]")
+              for release in releases:
+                  if release.get("draft"):
+                      continue
 
-              if len(name) > 120:
-                  name = name[:117] + "..."
-
-              url = asset.get("browser_download_url")
-              size_bytes = int(asset.get("size") or 0)
-
-              if size_bytes >= 1024 * 1024:
-                  size = f"{size_bytes / (1024 * 1024):.1f} МБ"
-              elif size_bytes >= 1024:
-                  size = f"{size_bytes / 1024:.1f} КБ"
-              else:
-                  size = f"{size_bytes} Б"
-
-              if url:
-                  asset_lines.append(
-                      f"[{name}]({url}) — {size}"
+                  message_id, _ = read_marker(
+                      release.get("body") or ""
                   )
 
-          if len(assets) > 5:
-              asset_lines.append(
-                  f"И ещё файлов: {len(assets) - 5}"
-              )
+                  if not message_id:
+                      continue
 
-          if asset_lines:
-              assets_text = "\n".join(asset_lines)
-          else:
-              assets_text = (
-                  "Прикреплённых файлов нет — "
-                  f"[открыть страницу релиза]({release_url})"
-              )
-
-          release_kind = (
-              "ПРЕРЕЛИЗ"
-              if prerelease
-              else "НОВАЯ ВЕРСИЯ"
-          )
-
-          header = (
-              f"## {release_kind}: "
-              f"[{release_name}]({release_url})\n\n"
-          )
-
-          files_section = (
-              "\n\n**Файлы Апельштейна**\n"
-              + assets_text
-          )
-
-          mentions_section = (
-              "\n\n" + mentions
-              if mentions
-              else ""
-          )
-
-          reserved_length = (
-              len(header)
-              + len(files_section)
-              + len(mentions_section)
-          )
-
-          max_body_length = 2000 - reserved_length
-
-          if max_body_length < 0:
-              print(
-                  "Release file list and mentions exceed "
-                  "Discord's 2000-character limit.",
-                  file=sys.stderr
-              )
-              sys.exit(1)
-
-          if len(release_body) > max_body_length:
-              suffix = (
-                  "\n\n…Полный список изменений — "
-                  f"[на странице релиза]({release_url})"
-              )
-
-              trim_to = max(
-                  0,
-                  max_body_length - len(suffix)
-              )
-
-              release_body = (
-                  release_body[:trim_to].rstrip()
-                  + suffix
-              )
-
-          message_content = (
-              header
-              + release_body
-              + files_section
-              + mentions_section
-          )
-
-          payload = {
-              "username": os.environ.get(
-                  "WEBHOOK_NAME",
-                  "GitHub Releases"
-              ),
-              "avatar_url": repository.get(
-                  "owner",
-                  {}
-              ).get("avatar_url"),
-              "content": message_content,
-
-              "flags": 4,
-
-              "allowed_mentions": {
-                  "parse": [],
-                  "users": notify_user_ids
-              }
-          }
-
-          webhook_url = os.environ.get(
-              "DISCORD_WEBHOOK_URL",
-              ""
-          ).strip()
-
-          if not webhook_url:
-              print(
-                  "DISCORD_WEBHOOK_URL is empty.",
-                  file=sys.stderr
-              )
-              sys.exit(1)
-
-          separator = "&" if "?" in webhook_url else "?"
-          request_url = webhook_url + separator + "wait=true"
-
-          request = urllib.request.Request(
-              request_url,
-              data=json.dumps(
-                  payload,
-                  ensure_ascii=False
-              ).encode("utf-8"),
-              headers={
-                  "Content-Type": "application/json",
-                  "User-Agent": (
-                      "GitHub-Actions-Discord-Release"
+                  sync_release(
+                      release,
+                      allow_create=False
                   )
-              },
-              method="POST"
-          )
 
           try:
-              with urllib.request.urlopen(
-                  request,
-                  timeout=30
-              ) as response:
-                  response_body = response.read().decode(
-                      "utf-8",
-                      errors="replace"
-                  )
+              if EVENT_NAME == "workflow_dispatch":
+                  run_manual_test()
 
-                  if response.status not in (200, 204):
-                      print(
-                          f"Discord returned HTTP "
-                          f"{response.status}: "
-                          f"{response_body}",
-                          file=sys.stderr
+              elif EVENT_NAME == "schedule":
+                  run_scheduled_sync()
+
+              elif EVENT_NAME == "release":
+                  release = EVENT.get("release")
+
+                  if not release:
+                      raise ValueError(
+                          "Release payload is missing."
                       )
-                      sys.exit(1)
 
-                  print(
-                      "Discord release notification sent "
-                      f"successfully. HTTP {response.status}"
+                  action = EVENT.get("action", "")
+
+                  sync_release(
+                      release,
+                      allow_create=(
+                          action == "published"
+                      )
                   )
+
+              else:
+                  raise ValueError(
+                      f"Unsupported event: {EVENT_NAME}"
+                  )
+
           except urllib.error.HTTPError as error:
               details = error.read().decode(
                   "utf-8",
                   errors="replace"
               )
+
               print(
-                  f"Discord webhook failed. "
                   f"HTTP {error.code}: {details}",
                   file=sys.stderr
               )
               sys.exit(1)
+
           except urllib.error.URLError as error:
               print(
-                  f"Cannot reach Discord webhook: {error}",
+                  f"Network error: {error}",
+                  file=sys.stderr
+              )
+              sys.exit(1)
+
+          except Exception as error:
+              print(
+                  f"Error: {error}",
                   file=sys.stderr
               )
               sys.exit(1)
