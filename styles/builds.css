@@ -701,6 +701,11 @@ details:not([open]) > .details-content {
     background: rgba(76, 139, 59, 0.2);
 }
 
+.download-card--latest {
+    position: relative;
+    padding-right: 2.55rem;
+}
+
 .download-card strong,
 .version-item strong,
 .update-item strong {
@@ -923,6 +928,10 @@ details:not([open]) > .details-content {
     color: #1b190f;
     /*background: linear-gradient(180deg, rgba(255, 226, 116, 0.84), rgba(220, 180, 72, 0.82));*/
     box-shadow: 0 0 0 2px rgba(255, 249, 207, 0.08), 4px 4px 0 rgba(16, 16, 13, 0.82);
+}
+
+.mini-panel > summary .faq-bubble {
+    margin-left: 0.1rem;
 }
 
 .mini-panel > summary:hover,

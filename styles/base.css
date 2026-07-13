@@ -63,6 +63,51 @@ a:focus-visible {
     color: #ffffff;
 }
 
+.faq-bubble {
+    width: 1.55rem;
+    height: 1.55rem;
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    color: #84c7e8;
+    background: rgba(17, 17, 17, 0.82);
+    border: 2px solid rgba(255, 249, 207, 0.52);
+    border-radius: 50%;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.52);
+    cursor: pointer;
+    font-family: "Trebuchet MS", Arial, sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    text-shadow: none;
+    transition: transform 150ms ease, background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.faq-bubble:hover,
+.faq-bubble:focus-visible {
+    color: #ffffff;
+    background: rgba(28, 23, 18, 0.92);
+    border-color: #fff4a3;
+    outline: none;
+    transform: translateY(-1px);
+}
+
+.faq-bubble:active {
+    transform: translateY(1px);
+}
+
+.faq-bubble--inline {
+    margin-inline-start: 0.15rem;
+}
+
+.faq-bubble--corner {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.55rem;
+    z-index: 2;
+}
+
 .head-link {
     position: fixed;
     z-index: 10;

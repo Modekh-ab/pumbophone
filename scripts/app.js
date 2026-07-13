@@ -1,6 +1,6 @@
 // import { BUILDS, FAQS, MODS, SKINS } from "./mods.js?v=split-25";
 import { BUILDS } from "./data/builds.js";
-import { FAQS } from "./data/faqs.js";
+import { FAQS } from "./data/faqs.js?v=split-2";
 import { MODS } from "./data/mods.js";
 import { SKINS } from "./data/skins.js";
 import { MOD_FILE_ALIASES, MOD_CATEGORIES, MOD_CATEGORY_ALIASES, MOD_KEYS_BY_CATEGORY }
@@ -90,6 +90,7 @@ function init() {
     initBuildPanoramas();
     renderFaq();
     renderSliderControls();
+    bindFaqBubbles();
     addMdLinkSmoothScroll(); // TEST
     bindInventoryToggle();
     bindSkinControls();
@@ -433,7 +434,16 @@ function renderBuild(build) {
             <span>/скачать</span>
           </summary>
           <div class="details-content">
-            <div class="download-card" data-latest-download>
+            <div class="download-card download-card--latest" data-latest-download>
+              <a
+                data-faq-bubble
+                class="faq-bubble faq-bubble--corner"
+                href="#faq-required-archive"
+                aria-label="Перейти к строке про обязательный архив в факью"
+                title="Перейти к обязательному архиву"
+              >
+                ?
+              </a>
               <div>
                 <strong>Ищу новейший архив...</strong>
                 <p>GitHub Releases проверяются автоматически.</p>
@@ -448,7 +458,18 @@ function renderBuild(build) {
             </details>
 
             <details class="mini-panel versions-panel">
-              <summary>/авто_версии</summary>
+              <summary>
+                <span>/авто_версии</span>
+                <a
+                  data-faq-bubble
+                  class="faq-bubble faq-bubble--inline"
+                  href="#faq-auto-versions"
+                  aria-label="Перейти к строке про /авто_версии в факью"
+                  title="Перейти к /авто_версии"
+                >
+                  ?
+                </a>
+              </summary>
               <div class="details-content">
                 <div class="generated-warning">
                   <i data-lucide="triangle-alert" aria-hidden="true"></i>
@@ -524,11 +545,36 @@ function renderFaq() {
       <details class="faq-item" ${index === 0 ? "open" : ""}>
         <summary>${escapeHtml(item.question)}</summary>
         <div class="details-content">
-          <div class="faq-answer markdown-body">${renderMarkdown(item.answer)}${renderFaqLegend(item.legend)}${item.after ? renderMarkdown(item.after) : ""}</div>
+          <div class="faq-answer markdown-body">${renderFaqBlock(item.answer)}${renderFaqLegend(item.legend)}${renderFaqBlock(item.after)}</div>
         </div>
       </details>
     `;
     }).join("");
+}
+
+function renderFaqBlock(block) {
+    if (!block) {
+        return "";
+    }
+
+    if (Array.isArray(block)) {
+        const lines = block.map((line) => {
+            if (typeof line === "string") {
+                return line;
+            }
+
+            if (!line || typeof line !== "object") {
+                return "";
+            }
+
+            const anchor = line.id ? `<a id="${escapeAttr(line.id)}"></a>` : "";
+            return `${anchor}${String(line.text || "")}`;
+        });
+
+        return renderMarkdown(lines.join("\n"));
+    }
+
+    return renderMarkdown(block);
 }
 
 function renderFaqLegend(items) {
@@ -537,10 +583,11 @@ function renderFaqLegend(items) {
     }
 
     const rows = items.map((item) => {
+        const anchor = item.id ? `<span id="${escapeAttr(item.id)}" class="markdown-anchor"></span>` : "";
         return `
           <li class="faq-legend-item">
             ${renderFaqLegendBadge(item)}
-            <span>${escapeHtml(item.text)}</span>
+            <span>${anchor}${escapeHtml(item.text)}</span>
           </li>
         `;
     }).join("");
@@ -556,6 +603,28 @@ function renderFaqLegendBadge(item) {
 
     const requirementClass = item.variant === "optional" ? "requirement-icon--optional" : "requirement-icon--required";
     return `<span class="requirement-icon ${requirementClass}">${escapeHtml(item.label)}</span>`;
+}
+
+function bindFaqBubbles() {
+    document.querySelectorAll("[data-faq-bubble]").forEach((link) => {
+        link.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const id = link.getAttribute("href")?.slice(1);
+            const target = id ? document.getElementById(id) : null;
+            if (!target) {
+                return;
+            }
+
+            target.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+            history.replaceState(null, "", `#${id}`);
+        });
+    });
 }
 
 function addMdLinkSmoothScroll() {

@@ -12,7 +12,7 @@
     <link rel="shortcut icon" href="resources/img/favicon-frames/frame-000.png?v=site-icon-2" type="image/png" />
     <link rel="preload" href="resources/fonts/minecraft-rus.ttf" as="font" type="font/ttf" crossorigin />
     <link rel="preload" href="resources/fonts/MinecraftTitle.ttf" as="font" type="font/ttf" crossorigin />
-    <link rel="stylesheet" href="styles/main.css?v=split-30" />
+    <link rel="stylesheet" href="styles/main.css?v=split-31" />
   </head>
   <body id="top">
     <a class="head-link" href="#top" aria-label="Вверх">
@@ -20,10 +20,21 @@
     </a>
 
     <div class="top-actions" aria-label="Быстрые команды">
-      <button class="inventory-toggle" id="inventoryToggle" type="button" aria-pressed="true">
-        <span class="power-mark" aria-hidden="true"></span>
-        <span class="toggle-command" id="inventoryToggleText">/отключить_инвентарь</span>
-      </button>
+      <div class="inventory-toggle-group">
+        <button class="inventory-toggle" id="inventoryToggle" type="button" aria-pressed="true">
+          <span class="power-mark" aria-hidden="true"></span>
+          <span class="toggle-command" id="inventoryToggleText">/отключить_инвентарь</span>
+        </button>
+        <a
+          data-faq-bubble
+          class="faq-bubble faq-bubble--inline"
+          href="#faq-disable-inventory"
+          aria-label="Перейти к строке про /отключить_инвентарь в факью"
+          title="Перейти к /отключить_инвентарь"
+        >
+          ?
+        </a>
+      </div>
       <a class="faq-jump" href="#faq" aria-label="Перейти к факью">
         <span class="question-mark" aria-hidden="true">?</span>
         <span class="toggle-command">/факью</span>
@@ -65,6 +76,6 @@
       window.PUMBOPHONE_REPOSITORY = { owner: "Modekh-ab", repo: "pumbophone" };
     </script>
     <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script type="module" src="scripts/app.js?v=split-37"></script>
+    <script type="module" src="scripts/app.js?v=split-38"></script>
   </body>
 </html>

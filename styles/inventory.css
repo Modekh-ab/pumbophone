@@ -8,6 +8,12 @@
     gap: 0.7rem;
 }
 
+.inventory-toggle-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+}
+
 .inventory-toggle,
 .faq-jump,
 .github-jump {
