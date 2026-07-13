@@ -17,8 +17,10 @@ jobs:
     env:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
-      WEBHOOK_NAME: "СБОРКИ ПУМБОФОНА"
+      WEBHOOK_NAME: "Сборки Пумбофона"
       EMBED_COLOR: "15895592"
+
+      DISCORD_NOTIFY_USER_IDS: "@modekh @siranyli_zhidenko_32147"
 
     steps:
       - name: validate-webhook-secret
@@ -132,7 +134,7 @@ jobs:
               "color": int(os.environ.get("EMBED_COLOR", "15895592")),
               "fields": [
                   {
-                      "name": "Файлы",
+                      "name": "Файлы Апельштейна",
                       "value": assets_text,
                       "inline": False
                   }
@@ -149,7 +151,7 @@ jobs:
                   "parse": []
               },
               "embeds": [
-                embed
+                  embed
               ]
           }
 
@@ -161,34 +163,121 @@ jobs:
           separator = "&" if "?" in webhook_url else "?"
           request_url = webhook_url + separator + "wait=true"
 
-          request = urllib.request.Request(
-              request_url,
-              data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-              headers={
-                  "Content-Type": "application/json",
-                  "User-Agent": "GitHub-Actions-Discord-Release"
-              },
-              method="POST"
+          def send_webhook(message_payload, description):
+              request = urllib.request.Request(
+                  request_url,
+                  data=json.dumps(
+                      message_payload,
+                      ensure_ascii=False
+                  ).encode("utf-8"),
+                  headers={
+                      "Content-Type": "application/json",
+                      "User-Agent": "GitHub-Actions-Discord-Release"
+                  },
+                  method="POST"
+              )
+
+              try:
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      response_body = response.read().decode(
+                          "utf-8",
+                          errors="replace"
+                      )
+
+                      if response.status not in (200, 204):
+                          print(
+                              f"Discord returned HTTP {response.status}: "
+                              f"{response_body}",
+                              file=sys.stderr
+                          )
+                          sys.exit(1)
+
+                      print(
+                          f"{description} sent successfully. "
+                          f"HTTP {response.status}"
+                      )
+              except urllib.error.HTTPError as error:
+                  details = error.read().decode("utf-8", errors="replace")
+                  print(
+                      f"Discord webhook failed. HTTP {error.code}: {details}",
+                      file=sys.stderr
+                  )
+                  sys.exit(1)
+              except urllib.error.URLError as error:
+                  print(
+                      f"Cannot reach Discord webhook: {error}",
+                      file=sys.stderr
+                  )
+                  sys.exit(1)
+
+          # Сначала отправляется основное сообщение с данными релиза.
+          send_webhook(payload, "Release notification")
+
+          # Затем отдельным сообщением отправляются упоминания, поэтому
+          # визуально они находятся после embed и реально вызывают уведомление.
+          raw_user_ids = os.environ.get(
+              "DISCORD_NOTIFY_USER_IDS",
+              ""
           )
 
-          try:
-              with urllib.request.urlopen(request, timeout=30) as response:
-                  response_body = response.read().decode("utf-8", errors="replace")
-                  if response.status not in (200, 204):
-                      print(
-                          f"Discord returned HTTP {response.status}: {response_body}",
-                          file=sys.stderr
-                      )
-                      sys.exit(1)
-                  print(f"Discord notification sent successfully. HTTP {response.status}")
-          except urllib.error.HTTPError as error:
-              details = error.read().decode("utf-8", errors="replace")
+          notify_user_ids = [
+              user_id.strip()
+              for user_id in raw_user_ids.split(",")
+              if user_id.strip()
+          ]
+
+          placeholder_ids = {
+              "PASTE_MONDLESS_USER_ID_HERE"
+          }
+
+          notify_user_ids = [
+              user_id
+              for user_id in notify_user_ids
+              if user_id not in placeholder_ids
+          ]
+
+          invalid_user_ids = [
+              user_id
+              for user_id in notify_user_ids
+              if not user_id.isdigit()
+          ]
+
+          if invalid_user_ids:
               print(
-                  f"Discord webhook failed. HTTP {error.code}: {details}",
+                  "Invalid Discord user IDs: "
+                  + ", ".join(invalid_user_ids),
                   file=sys.stderr
               )
               sys.exit(1)
-          except urllib.error.URLError as error:
-              print(f"Cannot reach Discord webhook: {error}", file=sys.stderr)
-              sys.exit(1)
+
+          if notify_user_ids:
+              mentions = " ".join(
+                  f"<@{user_id}>"
+                  for user_id in notify_user_ids
+              )
+
+              mention_payload = {
+                  "username": os.environ.get(
+                      "WEBHOOK_NAME",
+                      "GitHub Releases"
+                  ),
+                  "avatar_url": repository.get(
+                      "owner",
+                      {}
+                  ).get("avatar_url"),
+                  "content": mentions,
+                  "allowed_mentions": {
+                      "parse": [],
+                      "users": notify_user_ids
+                  }
+              }
+
+              send_webhook(
+                  mention_payload,
+                  "Discord user mentions"
+              )
+          else:
+              print(
+                  "No Discord user IDs configured; mentions skipped."
+              )
           PY
