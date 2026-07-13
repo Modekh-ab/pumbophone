@@ -3,10 +3,19 @@ name: discord-release
 on:
   release:
     types: [published, edited]
-  workflow_dispatch:
 
-  # schedule:
-  #   - cron: "*/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Тег релиза. Оставь пустым для последнего опубликованного релиза"
+        required: false
+        type: string
+        default: ""
+      discord_message_id:
+        description: "ID существующего сообщения Discord. Заполни только для первой привязки"
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -17,7 +26,7 @@ concurrency:
 
 jobs:
   notify-discord:
-    name: Sync release with Discord
+    name: Sync GitHub release with Discord
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -355,9 +364,6 @@ jobs:
                   + mentions_section
               )
 
-              # В fingerprint входят не только видимый текст,
-              # но и метаданные assets. Поэтому замена файла
-              # определяется даже при том же имени и размере.
               asset_state = [
                   {
                       "id": asset.get("id"),
@@ -395,8 +401,6 @@ jobs:
                   ).get("avatar_url"),
                   "content": content,
 
-                  # SUPPRESS_EMBEDS: ссылки кликабельны,
-                  # но Discord не создаёт лишние preview-карточки.
                   "flags": 4,
 
                   "allowed_mentions": {
@@ -518,10 +522,6 @@ jobs:
                           payload
                       )
                   except urllib.error.HTTPError as error:
-                      # Если сообщение вручную удалили из Discord,
-                      # можно восстановить его только на событии
-                      # публикации. При обычной синхронизации
-                      # не создаём дубль автоматически.
                       if error.code == 404:
                           print(
                               "Discord message "
@@ -557,63 +557,97 @@ jobs:
                   new_state_hash
               )
 
-          def run_manual_test():
-              fake_release = {
-                  "name": "Тестовое уведомление",
-                  "tag_name": "test",
-                  "html_url": (
-                      REPOSITORY.get("html_url")
-                      or (
-                          "https://github.com/"
-                          + REPOSITORY_NAME
+          def run_manual_sync():
+              inputs = EVENT.get("inputs") or {}
+              requested_tag = (
+                  inputs.get("tag") or ""
+              ).strip()
+
+              if requested_tag:
+                  encoded_tag = urllib.parse.quote(
+                      requested_tag,
+                      safe=""
+                  )
+
+                  release = github_request(
+                      "GET",
+                      (
+                          f"/repos/{REPOSITORY_NAME}"
+                          f"/releases/tags/{encoded_tag}"
                       )
-                  ),
-                  "body": (
-                      "Ручная проверка GitHub Actions "
-                      "завершена. Webhook подключён "
-                      "к Discord правильно."
-                  ),
-                  "prerelease": False,
-                  "assets": []
-              }
-
-              payload, _ = build_message(
-                  fake_release
-              )
-
-              create_discord_message(payload)
-
-          def run_scheduled_sync():
-              releases = github_request(
-                  "GET",
-                  (
-                      f"/repos/{REPOSITORY_NAME}"
-                      "/releases?per_page=30"
-                  )
-              ) or []
-
-              for release in releases:
-                  if release.get("draft"):
-                      continue
-
-                  message_id, _ = read_marker(
-                      release.get("body") or ""
                   )
 
-                  if not message_id:
-                      continue
+                  print(
+                      "Manual sync requested for tag "
+                      f"{requested_tag}."
+                  )
+              else:
+                  releases = github_request(
+                      "GET",
+                      (
+                          f"/repos/{REPOSITORY_NAME}"
+                          "/releases?per_page=30"
+                      )
+                  ) or []
 
-                  sync_release(
+                  release = next(
+                      (
+                          item
+                          for item in releases
+                          if not item.get("draft")
+                      ),
+                      None
+                  )
+
+                  if not release:
+                      raise ValueError(
+                          "No published releases were found."
+                      )
+
+                  print(
+                      "Manual sync requested for latest "
+                      f"release {release.get('tag_name')}."
+                  )
+
+              requested_message_id = (
+                  inputs.get("discord_message_id") or ""
+              ).strip()
+
+              if requested_message_id:
+                  if not requested_message_id.isdigit():
+                      raise ValueError(
+                          "discord_message_id must contain digits only."
+                      )
+
+                  payload, state_hash = build_message(
+                      release
+                  )
+
+                  edit_discord_message(
+                      requested_message_id,
+                      payload
+                  )
+
+                  store_marker(
                       release,
-                      allow_create=False
+                      requested_message_id,
+                      state_hash
                   )
+
+                  print(
+                      "The release is now linked to Discord "
+                      f"message {requested_message_id}."
+                  )
+                  return
+
+              sync_release(
+                  release,
+                  allow_create=False
+              )
 
           try:
               if EVENT_NAME == "workflow_dispatch":
-                  run_manual_test()
-
-              elif EVENT_NAME == "schedule":
-                  run_scheduled_sync()
+                  run_manual_sync()
 
               elif EVENT_NAME == "release":
                   release = EVENT.get("release")
