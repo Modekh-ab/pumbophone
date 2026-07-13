@@ -16,9 +16,7 @@ jobs:
 
     env:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-
       WEBHOOK_NAME: "Сборки Пумбофона"
-      EMBED_COLOR: "15895592"
 
       DISCORD_NOTIFY_USER_IDS: "1296386810791989248,1511398872428183763"
 
@@ -46,8 +44,7 @@ jobs:
           event = json.loads(event_path.read_text(encoding="utf-8"))
 
           repository = event["repository"]
-          sender = event.get("sender", {})
-          
+
           if event.get("release"):
               release = event["release"]
           else:
@@ -59,162 +56,25 @@ jobs:
                       "Ручная проверка GitHub Actions завершена. "
                       "Webhook подключён к Discord правильно."
                   ),
-                  "published_at": None,
-                  "created_at": None,
                   "prerelease": False,
-                  "assets": [],
-                  "author": {
-                      "login": os.environ.get("GITHUB_ACTOR", "GitHub Actions")
-                  }
+                  "assets": []
               }
 
-          release_name = release.get("name") or release.get("tag_name") or "Нн"
-          tag_name = release.get("tag_name") or "-"
-          release_url = release.get("html_url") or repository.get("html_url")
+          release_name = (
+              release.get("name")
+              or release.get("tag_name")
+              or "Без названия"
+          )
+          release_url = (
+              release.get("html_url")
+              or repository.get("html_url")
+          )
           release_body = (release.get("body") or "").strip()
-          published_at = release.get("published_at") or release.get("created_at")
           prerelease = bool(release.get("prerelease"))
 
           if not release_body:
-              release_body = "Нема изменений"
+              release_body = "Изменения не указаны."
 
-          max_description = 3500
-          if len(release_body) > max_description:
-              release_body = release_body[: max_description - 40].rstrip()
-              release_body += "\n\n…Полный список изменений на странице релиза"
-
-          assets = release.get("assets") or []
-          asset_lines = []
-
-          for asset in assets[:5]:
-              name = str(asset.get("name") or "СКАЧАТЬ").replace("]", r"\]")
-              url = asset.get("browser_download_url")
-              size_bytes = int(asset.get("size") or 0)
-
-              if size_bytes >= 1024 * 1024:
-                  size = f"{size_bytes / (1024 * 1024):.1f} МБ"
-              elif size_bytes >= 1024:
-                  size = f"{size_bytes / 1024:.1f} КБ"
-              else:
-                  size = f"{size_bytes} Б"
-
-              if url:
-                  asset_lines.append(f"[{name}]({url}) — {size}")
-
-          if len(assets) > 5:
-              asset_lines.append(f"И ещё файлов: {len(assets) - 5}")
-
-          if asset_lines:
-              assets_text = "\n".join(asset_lines)
-          else:
-              assets_text = "Прикреплённых файлов нет, открой страницу релиза"
-
-          if len(assets_text) > 1000:
-              assets_text = assets_text[:997] + "..."
-
-          release_kind = "ПРЕРЕЛИЗ" if prerelease else "НОВАЯ ВЕРСИЯ"
-          title = f"{release_kind}: {release_name}"
-          if len(title) > 256:
-              title = title[:253] + "…"
-
-          repo_name = repository.get("full_name") or os.environ.get("GITHUB_REPOSITORY", "—")
-          repo_url = repository.get("html_url")
-          repo_value = f"[{repo_name}]({repo_url})" if repo_url else repo_name
-
-          author_login = (
-              release.get("author", {}).get("login")
-              or sender.get("login")
-              or "неизвестный пользователь"
-          )
-
-          embed = {
-              "title": title,
-              "url": release_url,
-              "description": release_body,
-              "color": int(os.environ.get("EMBED_COLOR", "15895592")),
-              "fields": [
-                  {
-                      "name": "Файлы Апельштейна",
-                      "value": assets_text,
-                      "inline": False
-                  }
-              ]
-          }
-          
-          if published_at:
-              embed["timestamp"] = published_at
-
-          payload = {
-              "username": os.environ.get("WEBHOOK_NAME", "GitHub Releases"),
-              "avatar_url": repository.get("owner", {}).get("avatar_url"),
-              "allowed_mentions": {
-                  "parse": []
-              },
-              "embeds": [
-                  embed
-              ]
-          }
-
-          webhook_url = os.environ.get("DISCORD_WEBHOOK_URL", "").strip()
-          if not webhook_url:
-              print("DISCORD_WEBHOOK_URL is empty.", file=sys.stderr)
-              sys.exit(1)
-
-          separator = "&" if "?" in webhook_url else "?"
-          request_url = webhook_url + separator + "wait=true"
-
-          def send_webhook(message_payload, description):
-              request = urllib.request.Request(
-                  request_url,
-                  data=json.dumps(
-                      message_payload,
-                      ensure_ascii=False
-                  ).encode("utf-8"),
-                  headers={
-                      "Content-Type": "application/json",
-                      "User-Agent": "GitHub-Actions-Discord-Release"
-                  },
-                  method="POST"
-              )
-
-              try:
-                  with urllib.request.urlopen(request, timeout=30) as response:
-                      response_body = response.read().decode(
-                          "utf-8",
-                          errors="replace"
-                      )
-
-                      if response.status not in (200, 204):
-                          print(
-                              f"Discord returned HTTP {response.status}: "
-                              f"{response_body}",
-                              file=sys.stderr
-                          )
-                          sys.exit(1)
-
-                      print(
-                          f"{description} sent successfully. "
-                          f"HTTP {response.status}"
-                      )
-              except urllib.error.HTTPError as error:
-                  details = error.read().decode("utf-8", errors="replace")
-                  print(
-                      f"Discord webhook failed. HTTP {error.code}: {details}",
-                      file=sys.stderr
-                  )
-                  sys.exit(1)
-              except urllib.error.URLError as error:
-                  print(
-                      f"Cannot reach Discord webhook: {error}",
-                      file=sys.stderr
-                  )
-                  sys.exit(1)
-
-          # Сначала отправляется основное сообщение с данными релиза.
-          send_webhook(payload, "Release notification")
-
-          # Затем отдельным сообщением отправляются упоминания, поэтому
-          # визуально они находятся после embed и реально вызывают уведомление.
           raw_user_ids = os.environ.get(
               "DISCORD_NOTIFY_USER_IDS",
               ""
@@ -250,34 +110,195 @@ jobs:
               )
               sys.exit(1)
 
-          if notify_user_ids:
-              mentions = " ".join(
-                  f"<@{user_id}>"
-                  for user_id in notify_user_ids
+          mentions = " ".join(
+              f"<@{user_id}>"
+              for user_id in notify_user_ids
+          )
+
+          assets = release.get("assets") or []
+          asset_lines = []
+
+          for asset in assets[:5]:
+              name = str(
+                  asset.get("name") or "Скачать файл"
+              ).replace("]", r"\]")
+
+              if len(name) > 120:
+                  name = name[:117] + "..."
+
+              url = asset.get("browser_download_url")
+              size_bytes = int(asset.get("size") or 0)
+
+              if size_bytes >= 1024 * 1024:
+                  size = f"{size_bytes / (1024 * 1024):.1f} МБ"
+              elif size_bytes >= 1024:
+                  size = f"{size_bytes / 1024:.1f} КБ"
+              else:
+                  size = f"{size_bytes} Б"
+
+              if url:
+                  asset_lines.append(
+                      f"[{name}]({url}) — {size}"
+                  )
+
+          if len(assets) > 5:
+              asset_lines.append(
+                  f"И ещё файлов: {len(assets) - 5}"
               )
 
-              mention_payload = {
-                  "username": os.environ.get(
-                      "WEBHOOK_NAME",
-                      "GitHub Releases"
-                  ),
-                  "avatar_url": repository.get(
-                      "owner",
-                      {}
-                  ).get("avatar_url"),
-                  "content": mentions,
-                  "allowed_mentions": {
-                      "parse": [],
-                      "users": notify_user_ids
-                  }
-              }
-
-              send_webhook(
-                  mention_payload,
-                  "Discord user mentions"
-              )
+          if asset_lines:
+              assets_text = "\n".join(asset_lines)
           else:
-              print(
-                  "No Discord user IDs configured; mentions skipped."
+              assets_text = (
+                  "Прикреплённых файлов нет — "
+                  f"[открыть страницу релиза]({release_url})"
               )
+
+          release_kind = (
+              "ПРЕРЕЛИЗ"
+              if prerelease
+              else "НОВАЯ ВЕРСИЯ"
+          )
+
+          header = (
+              f"## {release_kind}: "
+              f"[{release_name}]({release_url})\n\n"
+          )
+
+          files_section = (
+              "\n\n**Файлы Апельштейна**\n"
+              + assets_text
+          )
+
+          mentions_section = (
+              "\n\n" + mentions
+              if mentions
+              else ""
+          )
+
+          reserved_length = (
+              len(header)
+              + len(files_section)
+              + len(mentions_section)
+          )
+
+          max_body_length = 2000 - reserved_length
+
+          if max_body_length < 0:
+              print(
+                  "Release file list and mentions exceed "
+                  "Discord's 2000-character limit.",
+                  file=sys.stderr
+              )
+              sys.exit(1)
+
+          if len(release_body) > max_body_length:
+              suffix = (
+                  "\n\n…Полный список изменений — "
+                  f"[на странице релиза]({release_url})"
+              )
+
+              trim_to = max(
+                  0,
+                  max_body_length - len(suffix)
+              )
+
+              release_body = (
+                  release_body[:trim_to].rstrip()
+                  + suffix
+              )
+
+          message_content = (
+              header
+              + release_body
+              + files_section
+              + mentions_section
+          )
+
+          payload = {
+              "username": os.environ.get(
+                  "WEBHOOK_NAME",
+                  "GitHub Releases"
+              ),
+              "avatar_url": repository.get(
+                  "owner",
+                  {}
+              ).get("avatar_url"),
+              "content": message_content,
+              "allowed_mentions": {
+                  "parse": [],
+                  "users": notify_user_ids
+              }
+          }
+
+          webhook_url = os.environ.get(
+              "DISCORD_WEBHOOK_URL",
+              ""
+          ).strip()
+
+          if not webhook_url:
+              print(
+                  "DISCORD_WEBHOOK_URL is empty.",
+                  file=sys.stderr
+              )
+              sys.exit(1)
+
+          separator = "&" if "?" in webhook_url else "?"
+          request_url = webhook_url + separator + "wait=true"
+
+          request = urllib.request.Request(
+              request_url,
+              data=json.dumps(
+                  payload,
+                  ensure_ascii=False
+              ).encode("utf-8"),
+              headers={
+                  "Content-Type": "application/json",
+                  "User-Agent": (
+                      "GitHub-Actions-Discord-Release"
+                  )
+              },
+              method="POST"
+          )
+
+          try:
+              with urllib.request.urlopen(
+                  request,
+                  timeout=30
+              ) as response:
+                  response_body = response.read().decode(
+                      "utf-8",
+                      errors="replace"
+                  )
+
+                  if response.status not in (200, 204):
+                      print(
+                          f"Discord returned HTTP "
+                          f"{response.status}: "
+                          f"{response_body}",
+                          file=sys.stderr
+                      )
+                      sys.exit(1)
+
+                  print(
+                      "Discord release notification sent "
+                      f"successfully. HTTP {response.status}"
+                  )
+          except urllib.error.HTTPError as error:
+              details = error.read().decode(
+                  "utf-8",
+                  errors="replace"
+              )
+              print(
+                  f"Discord webhook failed. "
+                  f"HTTP {error.code}: {details}",
+                  file=sys.stderr
+              )
+              sys.exit(1)
+          except urllib.error.URLError as error:
+              print(
+                  f"Cannot reach Discord webhook: {error}",
+                  file=sys.stderr
+              )
+              sys.exit(1)
           PY
