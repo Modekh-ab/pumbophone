@@ -2,17 +2,20 @@ name: discord-release
 
 on:
   release:
-    types: [published, edited]
+    types: [published]
+
+  repository_dispatch:
+    types: [release_archives_ready]
 
   workflow_dispatch:
     inputs:
       tag:
-        description: "Тег релиза. Оставь пустым для последнего опубликованного релиза"
+        description: "Release tag (remain empty for the last published release)"
         required: false
         type: string
         default: ""
       discord_message_id:
-        description: "ID существующего сообщения Discord. Заполни только для первой привязки"
+        description: "ID of existing Discord message (only for 1st sync)"
         required: false
         type: string
         default: ""
@@ -21,7 +24,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: discord-release-sync
+  group: discord-release-${{ github.event.release.id || github.event.client_payload.release_id || github.event.inputs.tag || github.run_id }}
   cancel-in-progress: false
 
 jobs:
@@ -82,7 +85,6 @@ jobs:
               "GitHub Releases"
           )
 
-          # Скрытый маркер в описании GitHub Release:
           # <!-- discord-release-message:MESSAGE_ID:STATE_HASH -->
           MARKER_RE = re.compile(
               r"<!--\s*discord-release-message:"
@@ -649,6 +651,39 @@ jobs:
               if EVENT_NAME == "workflow_dispatch":
                   run_manual_sync()
 
+              elif EVENT_NAME == "repository_dispatch":
+                  client_payload = (
+                      EVENT.get("client_payload") or {}
+                  )
+
+                  release_id = str(
+                      client_payload.get("release_id") or ""
+                  ).strip()
+
+                  if not release_id.isdigit():
+                      raise ValueError(
+                          "repository_dispatch did not contain "
+                          "a valid release_id."
+                      )
+
+                  release = github_request(
+                      "GET",
+                      (
+                          f"/repos/{REPOSITORY_NAME}"
+                          f"/releases/{release_id}"
+                      )
+                  )
+
+                  print(
+                      "Repository dispatch sync requested "
+                      f"for release {release.get('tag_name')}."
+                  )
+
+                  sync_release(
+                      release,
+                      allow_create=True
+                  )
+
               elif EVENT_NAME == "release":
                   release = EVENT.get("release")
 
@@ -657,13 +692,9 @@ jobs:
                           "Release payload is missing."
                       )
 
-                  action = EVENT.get("action", "")
-
                   sync_release(
                       release,
-                      allow_create=(
-                          action == "published"
-                      )
+                      allow_create=True
                   )
 
               else:
