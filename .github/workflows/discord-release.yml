@@ -225,6 +225,9 @@ jobs:
                   {}
               ).get("avatar_url"),
               "content": message_content,
+
+              "flags": 4,
+
               "allowed_mentions": {
                   "parse": [],
                   "users": notify_user_ids
