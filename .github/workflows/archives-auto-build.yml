@@ -35,11 +35,3 @@ jobs:
         run: node scripts/generate-auto-archives.mjs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  sync-discord:
-    needs: build-archives
-    uses: ./.github/workflows/discord-release.yml
-    with:
-      source: archives
-      release_id: ${{ format('{0}', github.event.release.id) }}
-    secrets: inherit
