@@ -20,7 +20,7 @@ jobs:
       WEBHOOK_NAME: "Сборки Пумбофона"
       EMBED_COLOR: "15895592"
 
-      DISCORD_NOTIFY_USER_IDS: "@modekh @siranyli_zhidenko_32147"
+      DISCORD_NOTIFY_USER_IDS: "1296386810791989248,1511398872428183763"
 
     steps:
       - name: validate-webhook-secret
