@@ -1,9 +1,9 @@
 !mixinbooter-10.7.jar
-apelsin-1.12.2-0.1.jar
 ActuallyAdditions-1.12.2-r152.jar
 ActuallyBaubles-1.12-1.1.jar
 advancedrocketry-2.2.11.jar
 AIImprovements-1.12-0.0.1b3.jar
+apelsin-1.12.2-0.3.jar
 AppleSkin-mc1.12-1.0.14.jar
 AquaAcrobatics-1.15.4.jar
 Atomic-Science-1.12.2-3.0.6b19.jar
@@ -12,7 +12,6 @@ BetterFps-1.4.8.jar
 BetterPingDisplay-1.12.2-1.0.jar
 Bookshelf-1.12.2-2.3.590.jar
 carryon-1.12.2-1.12.7.23.jar
-chunkloaders-1.2.9a-forge-mc1.12.jar
 Clumps-3.1.2.jar
 conarm-1.12.2-1.2.5.10.jar
 Controlling-3.0.12.4.jar
@@ -25,6 +24,9 @@ environmentaltech-1.12.2-2.0.20.1.jar
 foamfix-0.10.15-1.12.2.jar
 Forgelin-1.8.4.jar
 FpsReducer-mc1.12.2-1.20.jar
+FTBLib-5.4.7.2.jar
+FTBQuests-1202.9.0.15.jar
+FTBUtilities-5.4.1.131.jar
 GameStages-1.12.2-2.0.123.jar
 gamestagesviewer-1.0.jar
 getexpforeverything-1.12.2.jar
@@ -48,18 +50,18 @@ millenaire
 millenaire-8.1.2.jar
 millenaire-custom
 millenairejei-1.12.2-1.0.0-beta001.jar
-Millï¿½naire Extended - Byzantine-1.12.2-1.0.0.jar
-Millï¿½naire Extended - Indians-1.12.2-1.0.0.jar
-Millï¿½naire Extended - Inuits-1.12.2-1.0.0.jar
-Millï¿½naire Extended - Maya-1.12.2-1.0.0.jar
-Millï¿½naire Extended - Normans-1.12.2-1.1.1.jar
+Mill‚naire Extended - Byzantine-1.12.2-1.0.0.jar
+Mill‚naire Extended - Indians-1.12.2-1.0.0.jar
+Mill‚naire Extended - Inuits-1.12.2-1.0.0.jar
+Mill‚naire Extended - Maya-1.12.2-1.0.0.jar
+Mill‚naire Extended - Normans-1.12.2-1.1.1.jar
 mods.txt
 ModularPowersuits-1.12.2-1.1.048.jar
 MouseTweaks-2.10-mc1.12.2.jar
 NaturesCompass-1.12.2-1.8.5.jar
 NetherPortalFix_1.12.1-5.3.17.jar
 Numina-1.12.2-1.1.049.jar
-oeintegration-2.3.4.jar
+OptiFine-1.12.2_HD_U_G5.jar
 OptiFine_1.12.2_HD_U_E3.jar
 OreExcavation-1.4.150.jar
 Patchouli-1.0-23.6.jar
@@ -72,19 +74,18 @@ Scannable-MC1.12.2-1.6.3.26.jar
 SilentLib-1.12.2-3.0.14+168.jar
 SmoothFont-mc1.12.2-2.1.4.jar
 soundreloader-1.2-1.12.2.jar
-spark-forge.jar
-supermartijn642configlib-1.1.8-forge-mc1.12.jar
 Surge-1.12.2-2.0.77.jar
 TConstruct-1.12.2-2.13.0.183.jar
 tesla-core-lib-1.12.2-1.0.18.jar
 theoneprobe-1.12-1.4.28.jar
+tinkersjei-1.2.jar
 TinkerToolLeveling-1.12.2-1.1.0.jar
+tlskincape1.12.2-1.4.jar
 tombstone-1.12.2-4.7.6.jar
 topaddons-1.12.2-1.13.0.jar
 Treasure2-mc1.12.2-f14.23.5.2859-v2.3.2.jar
 valkyrielib-1.12.2-2.0.20.1.jar
-xaerolib-forge-1.12.2-1.1.0.jar
-xaerominimap-forge-1.12.2-26.1.0.jar
-xaeroworldmap-forge-1.12.2-1.41.2.jar
+xaerolib-forge-1.12.2-1.5.0.jar
+xaerominimap-forge-1.12.2-26.2.0.jar
+xaeroworldmap-forge-1.12.2-1.42.0.jar
 xnet-1.12-1.8.2.jar
-_supermartijn642corelib-1.1.21-forge-mc1.12.jar
