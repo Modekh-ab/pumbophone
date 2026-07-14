@@ -3,7 +3,8 @@ export const MOD_CATEGORIES = [
     {id: "qol", label: "QoL", command: "/qol", icon: "sparkles"},
     {id: "optimization", label: "Оптимизация", command: "/оптимизация", icon: "fire-extinguisher"},
     {id: "compat", label: "Совместимости", command: "/совместимости", icon: "cable"},
-    {id: "libraries", label: "Библиотеки", command: "/библиотеки", icon: "blocks"}
+    {id: "libraries", label: "Библиотеки", command: "/библиотеки", icon: "blocks"},
+    {id: "misc", label: "Разное", command: "/разное", icon: "rat"}
 ];
 
 export const MOD_FILE_ALIASES = {
@@ -114,7 +115,11 @@ export const MOD_KEYS_BY_CATEGORY = {
         "soundreloader",
         "theoneprobe",
         "xaerominimap",
-        "xaeroworldmap"
+        "xaeroworldmap",
+        "betterpingdisplay",
+        "ftbquests",
+        "ftbutilities",
+        "tlskincape"
     ],
     compat: [
         "actuallybaubles",
@@ -122,7 +127,8 @@ export const MOD_KEYS_BY_CATEGORY = {
         "jeb",
         "millenairejei",
         "oeintegration",
-        "topaddons"
+        "topaddons",
+        "tinkersjei"
     ],
     optimization: [
         "aiimprovements",
@@ -172,6 +178,7 @@ export const MOD_KEYS_BY_CATEGORY = {
         "teslacorelib",
         "timecore",
         "valkyrielib",
-        "xaerolib"
+        "xaerolib",
+        "ftblib"
     ]
 };

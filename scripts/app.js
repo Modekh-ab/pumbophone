@@ -324,7 +324,6 @@ function renderBuilds() {
         buildRefs.set(build.id, {
             root,
             image: root.querySelector("[data-hero-image]"),
-            version: root.querySelector("[data-version-info]"),
             mods: root.querySelector("[data-mods-list]"),
             modsCount: root.querySelector("[data-mods-count]"),
             latest: root.querySelector("[data-latest-download]"),
@@ -398,33 +397,14 @@ function renderBuild(build) {
       </section>
 
       <section class="command-grid" aria-label="Информация о сборке ${escapeAttr(build.name)}">
-        <details class="command-panel command-panel--about">
+        <details class="command-panel command-panel--about mods-panel">
           <summary>
-            <i class="summary-icon summary-icon--search" data-lucide="search" aria-hidden="true"></i>
-            <span>/чё_за</span>
+            <i class="summary-icon" data-lucide="boxes" aria-hidden="true"></i>
+            <span>/моды</span>
+            <span class="mod-count mod-count--total" data-mods-count>0</span>
           </summary>
           <div class="details-content">
-            <div class="subcommands">
-              <details class="mini-panel" open>
-                <summary>/версия</summary>
-                <div class="details-content">
-                  <div class="version-lines" data-version-info>
-                    <span>Minecraft: ожидает релиз</span>
-                    <span>Сборка: ожидает релиз</span>
-                  </div>
-                </div>
-              </details>
-
-              <details class="mini-panel mods-panel">
-                <summary>
-                  <span>/моды</span>
-                  <span class="mod-count mod-count--total" data-mods-count>0</span>
-                </summary>
-                <div class="details-content">
-                  <div class="mod-versions" data-mods-list></div>
-                </div>
-              </details>
-            </div>
+            <div class="mod-versions" data-mods-list></div>
           </div>
         </details>
 
@@ -1063,18 +1043,28 @@ function parseBuildModList(text, build) {
     return String(text || "")
         .split(/\r?\n/)
         .map((line) => resolveModFileId(line, modLookup))
-        .filter((id) => {
-            if (!id || seen.has(id)) {
+        .filter((mod) => {
+            if (!mod) {
                 return false;
             }
 
-            seen.add(id);
+            const key = typeof mod === "string"
+                ? `known:${mod}`
+                : `file:${mod.fileName.toLowerCase()}`;
+
+            if (seen.has(key)) {
+                return false;
+            }
+
+            seen.add(key);
             return true;
         });
 }
 
 function resolveModFileId(fileName, modLookup) {
-    const normalizedFileName = normalizeModFileToken(fileName);
+    const displayName = getModFileDisplayName(fileName);
+    const normalizedFileName = normalizeModFileToken(displayName);
+
     if (!normalizedFileName) {
         return null;
     }
@@ -1099,7 +1089,30 @@ function resolveModFileId(fileName, modLookup) {
         normalizedFileName.startsWith(alias)
     ));
 
-    return match?.[1] || null;
+    if (match) {
+        return match[1];
+    }
+
+    return {
+        name: displayName,
+        fileName: displayName,
+        unknown: true,
+        category: "misc"
+    };
+}
+
+function getModFileDisplayName(value) {
+    const fileName = String(value || "")
+        .trim()
+        .split(/[\\/]/)
+        .pop()
+        ?.trim() || "";
+
+    if (!fileName || /^(?:#|\/\/)/.test(fileName) || !/\.jar$/i.test(fileName)) {
+        return "";
+    }
+
+    return fileName.replace(/\.jar$/i, "").trim();
 }
 
 function normalizeModFileToken(value) {
@@ -1183,6 +1196,10 @@ function renderModCategoryPanel(category, mods) {
 }
 
 function renderModItem(mod) {
+    if (mod.unknown) {
+        return `<li>${escapeHtml(mod.name)}</li>`;
+    }
+
     return `
       <li>
         <a class="mod-link" href="${escapeAttr(mod.url)}" target="_blank" rel="noreferrer">${escapeHtml(mod.name)} v${escapeHtml(mod.version)}</a>
@@ -1588,11 +1605,6 @@ async function loadReleases() {
 function renderDownloads(build, files, generatedFiles = []) {
     const refs = buildRefs.get(build.id);
     const [latest, ...older] = files;
-
-    refs.version.innerHTML = `
-    <span>Minecraft: Forge ${escapeHtml(latest.mcVersion)}</span>
-    <span>Сборка: ${escapeHtml(latest.buildVersion)}</span>
-  `;
 
     refs.latest.innerHTML = `
     <div>
@@ -2087,10 +2099,7 @@ function slugify(value) {
 
 function renderEmptyReleaseState(build, message) {
     const refs = buildRefs.get(build.id);
-    refs.version.innerHTML = `
-    <span>Minecraft: ожидает релиз</span>
-    <span>Сборка: ожидает релиз</span>
-  `;
+
     refs.latest.innerHTML = `
     <div>
       <strong>${escapeHtml(message)}</strong>

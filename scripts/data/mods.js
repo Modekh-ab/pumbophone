@@ -804,7 +804,43 @@ export const MODS = {
             version: "1.8.2",
             url: "https://www.curseforge.com/minecraft/mc-mods/xnet",
             description: "сети для автоматизации предметов, жидкостей, энергии и редстоуна."
-        }
+        },
+        betterpingdisplay: {
+            name: "Better Ping Display",
+            version: "1.0",
+            url: "https://www.curseforge.com/minecraft/mc-mods/better-ping-display",
+            description: "показывает пинг игроков в табе."
+        },
+        ftblib: {
+            name: "FTB Library",
+            version: "5.4.7.2",
+            url: "https://www.curseforge.com/minecraft/mc-mods/ftb-library-legacy-forge",
+            description: "для модов FTB (Quests, Utilities и тд)."
+        },
+        ftbquests: {
+            name: "FTB Quests",
+            version: "1202.9.0.15",
+            url: "https://www.curseforge.com/minecraft/mc-mods/ftb-quests-forge",
+            description: "добавляет квестики и квестбук."
+        },
+        ftbutilities: {
+            name: "FTB Utilities",
+            version: "5.4.1.131",
+            url: "https://www.curseforge.com/minecraft/mc-mods/ftb-utilities-forge",
+            description: "добавляет загрузчик и защиту чанков, управление командами игроков и тд."
+        },
+        tinkersjei: {
+            name: "Tinker's JEI",
+            version: "1.2",
+            url: "https://www.curseforge.com/minecraft/mc-mods/tinkers-jei",
+            description: "добавляет в JEI отдельную вкладку со статами материалов TConstruct."
+        },
+        tlskincape: {
+            name: "TLSkinCape",
+            version: "1.4",
+            url: "https://tlauncher.org",
+            description: "загружает и отображает скины и плащи игроков, использующих систему TLauncher."
+        },
     },
     "1.16.5": {},
     "1.19.2": {},

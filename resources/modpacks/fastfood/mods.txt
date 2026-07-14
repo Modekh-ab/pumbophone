@@ -1,5 +1,4 @@
 !mixinbooter-10.7.jar
-3dSkinLayers-forge-mc1.12.2-1.2.0.jar
 AIImprovements-1.12-0.0.1b3.jar
 AppleSkin-mc1.12-1.0.14.jar
 AquaAcrobatics-1.15.4.jar
@@ -8,7 +7,6 @@ ArtemisLib-1.12.2-v1.0.6.jar
 artifacts-1.12.2-1.2.4.jar
 Atum-1.12.2-2.0.20.jar
 Baubles-1.12-1.5.2.jar
-betteradvancements-1.12.2-0.3.1.2.jar
 BetterPingDisplay-1.12.2-1.0.jar
 BetterRecords-1.12.2-1.6.2.jar
 Bookshelf-1.12.2-2.3.590.jar
@@ -17,21 +15,16 @@ BotanicAdditions-1.12.2-12.2.6.jar
 carryon-1.12.2-1.12.7.23.jar
 ChickenChunks-1.12.2-2.4.2.74-universal.jar
 Chocolate_Quest_Repoured-1.12.2-2.8.0B.jar
-ClientTweaks_1.12.2-3.1.11.jar
 Clumps-3.1.2.jar
 CodeChickenLib-1.12.2-3.2.3.358-universal.jar
 Controlling-3.0.12.4.jar
 corpse-1.12.2-1.0.8.jar
-CreativeCore_v1.10.71_mc1.12.2.jar
-Ding-1.12.2-1.0.2.jar
 EnchantingPlusPlus-1.12.2-5.1.0.jar
 EnchantmentDescriptions-1.12.2-1.1.15.jar
 EnderCore-1.12.2-0.5.78.jar
 EnderIO-1.12.2-5.3.72.jar
 Erebus-1.0.32.jar
 FallingTree-1.12.2-2.4.0.jar
-farsight-1.6.jar
-fastfood-client-1.12.2-1.0.jar
 FastFurnace-1.12.2-1.3.1.jar
 FastWorkbench-1.12.2-1.7.4.jar
 Forgelin-1.8.4.jar
@@ -44,21 +37,16 @@ Hats-1.12.2-7.1.1.jar
 Hwyla-1.8.26-B41_1.12.2.jar
 ICBM-classic-1.12.2-6.5.5.jar
 iChunUtil-1.12.2-7.2.2.jar
-InventoryHUD-1.12.2.forge-3.4.4.jar
 InventoryTweaks-1.63.jar
 ironchest-1.12.2-7.0.72.847.jar
-ItemBorders-1.12.2-forge-1.2.0.jar
-ItemPhysic Lite 1.3.7 mc1.12.2.jar
 IvToolkit-1.3.3-1.12.jar
 Jade-0.1.0.jar
 jeiintegration_1.12.2-1.6.0.jar
 jei_1.12.2-4.16.1.301.jar
 journeymap-1.12.2-5.7.1p3.jar
 Just-Enough-Botania-1.12.2-v0.2.jar
-JustEnoughCalculation-1.12.2-3.2.7.jar
 JustEnoughResources-1.12.2-0.9.2.60.jar
 konkrete_forge_1.6.1_MC_1.12-1.12.2.jar
-LegendaryTooltips-1.12.2-1.1.11.jar
 LibraryEx-1.12.2-1.2.2.jar
 llibrary-1.7.20-1.12.2.jar
 lootr-1.12.2-0.6.2.jar
@@ -76,13 +64,9 @@ OpenBlocks-1.12.2-1.8.1.jar
 OpenModsLib-1.12.2-0.12.2.jar
 OptiFine_1.12.2_HD_U_E3.jar
 overchanter-1.0.0.2.jar
-panoramica_forge_1.2.0_MC_1.12-1.12.2.jar
 Patchouli-1.0-23.6.jar
 Placebo-1.12.2-1.6.1.jar
 ReachFix-1.12.2-1.1.3.jar
-replaymod-1.12.2-2.6.13.jar
-Schematica-1.12.2-1.8.0.169-universal.jar
-ScreenshotToClipboard-1.12.2-1.0.1.jar
 SmoothFont-mc1.12.2-2.1.4.jar
 Surge-1.12.2-2.0.77.jar
 TexFix V-1.12-4.0.jar
@@ -91,10 +75,6 @@ tlskincape1.12.2-1.4.jar
 torcherino-7.6.jar
 torchmaster_1.12.2-1.8.5.0.jar
 vintagefix-0.7.0.jar
-wakes-1.12.2-Forge-1.2.0.jar
-worldedit-forge-mc1.12.2-6.1.10-dist.jar
 xaerolib-forge-1.12.2-1.1.0.jar
 xaerominimap-forge-1.12.2-25.3.13.jar
 xaeroworldmap-forge-1.12.2-1.40.16.jar
-zergatul.freecam-2.0.0-forge-1.12.2.jar
-[1.12.2] Modern Fullbright 4.0.jar
