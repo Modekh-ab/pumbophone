@@ -33,7 +33,7 @@ export function formatBytes(bytes = 0) {
 }
 
 export function renderMarkdown(source) {
-    const lines = String(source).replace(/\r\n?/g, "\n").split("\n");
+    const lines = stripHtmlComments(source).replace(/\r\n?/g, "\n").split("\n");
     const html = [];
     let index = 0;
 
@@ -124,6 +124,12 @@ export function renderMarkdown(source) {
     }
 
     return html.join("");
+}
+
+function stripHtmlComments(source) {
+    return String(source)
+        .replace(/<!--[\s\S]*?-->/g, "")
+        .replace(/<!--[^\n>]*(?:>|$)/g, "");
 }
 
 function isMarkdownBlockStart(line) {

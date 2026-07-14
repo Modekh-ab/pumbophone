@@ -6,8 +6,8 @@ import { SKINS } from "./data/skins.js";
 import { MOD_FILE_ALIASES, MOD_CATEGORIES, MOD_CATEGORY_ALIASES, MOD_KEYS_BY_CATEGORY }
     from "./data/mods_keys.js";
 
-import { collectBuildArchives, collectGeneratedArchives, compareArchives, fetchReleasePayload } from "./releases.js?v=split-23";
-import { escapeAttr, escapeHtml, formatBytes, formatMoscowDateTime, renderMarkdown } from "./utils.js?v=split-22";
+import { collectBuildArchives, collectGeneratedArchives, compareArchives, fetchReleasePayload } from "./releases.js?v=split-24";
+import { escapeAttr, escapeHtml, formatBytes, formatMoscowDateTime, renderMarkdown } from "./utils.js?v=split-23";
 import { initBuildPanoramas } from "./panorama.js?v=split-27";
 import { startHead, startPlayer } from "./webgl.js?v=split-22";
 
