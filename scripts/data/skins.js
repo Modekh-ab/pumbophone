@@ -12,6 +12,6 @@
     "resources/models/skins/fgg5_2.glb",
     "resources/models/skins/Kail_Krane.glb",
     "resources/models/skins/Vortex2039.glb",
-    "resources/models/skins/ivan_zolik2004_2_1.glb"
+    "resources/models/skins/ivan_zolik2077.glb",
+    "resources/models/skins/Mak1309.glb"
 ];
-
